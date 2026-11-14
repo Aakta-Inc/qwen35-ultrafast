@@ -1,0 +1,17 @@
+diff --git a/ggml/src/ggml-cuda/mmq.cu b/ggml/src/ggml-cuda/mmq.cu
+index 2e61997..ac8ee36 100644
+--- a/ggml/src/ggml-cuda/mmq.cu
++++ b/ggml/src/ggml-cuda/mmq.cu
+@@ -393,6 +393,12 @@ void ggml_cuda_mul_mat_q(
+ }
+ 
+ bool ggml_cuda_should_use_mmq(enum ggml_type type, int cc, int64_t ne11, int64_t n_experts) {
++    // Experimental dense Blackwell prefill: dequantize weights and use cuBLAS.
++    // Preserve the existing small-batch/decode and expert dispatch paths.
++    if (cc >= GGML_CUDA_CC_BLACKWELL && cc < GGML_CUDA_CC_RUBIN && n_experts == 0 && ne11 >= 128 &&
++        (type == GGML_TYPE_Q4_K || type == GGML_TYPE_Q5_K || type == GGML_TYPE_Q6_K)) {
++        return false;
++    }
+ #ifdef GGML_CUDA_FORCE_CUBLAS
+     return false;
+ #endif // GGML_CUDA_FORCE_CUBLAS

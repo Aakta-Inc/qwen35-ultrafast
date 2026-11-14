@@ -49,6 +49,9 @@ struct Args {
     video: Option<PathBuf>,
     #[arg(long, default_value_t = 4)]
     video_fps: u32,
+    /// Diagnostic-only CUPTI preload library. Instrumented runs are not performance results.
+    #[arg(long)]
+    profile_library: Option<PathBuf>,
 }
 
 struct Server(Child);
@@ -264,6 +267,8 @@ fn run(args: Args) -> Result<()> {
     let metadata = json!({"schema":2,"label":args.label,"backend":"llama.cpp", "server_sha256":hash_file(&args.server)?,
         "backend_libraries":backend_libraries(&args.server)?,
         "media_tools":if args.video.is_some() { media_tools()? } else {json!({})},
+        "profiling":args.profile_library.is_some(),
+        "profiling_library_sha256":args.profile_library.as_deref().map(hash_file).transpose()?,
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
         "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps},
@@ -280,6 +285,20 @@ fn run(args: Args) -> Result<()> {
     command.env_remove("GGML_CUDA_DISABLE_GRAPHS");
     if args.disable_graphs {
         command.env("GGML_CUDA_DISABLE_GRAPHS", "1");
+    }
+    if let Some(library) = &args.profile_library {
+        command.env("LD_PRELOAD", library.canonicalize()?);
+        command.env(
+            "QWEN_PROFILE_TARGET",
+            args.server
+                .canonicalize()?
+                .file_name()
+                .context("missing server filename")?,
+        );
+        command.env(
+            "QWEN_PROFILE_OUTPUT",
+            args.out.canonicalize()?.join("kernels.csv"),
+        );
     }
     let mut server = Server(command.spawn()?);
     let agent = ureq::AgentBuilder::new()
