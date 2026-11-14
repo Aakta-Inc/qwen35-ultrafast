@@ -22,6 +22,7 @@ fn same_contract(a: &Value, b: &Value) -> Result<()> {
         "backend",
         "server_sha256",
         "backend_libraries",
+        "media_tools",
         "model_sha256",
         "mmproj_sha256",
         "repeats",
@@ -131,7 +132,7 @@ mod tests {
     use super::*;
     #[test]
     fn rejects_model_and_graph_policy_changes() {
-        let a = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{"libllama.so":"d"},"model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"video_fps":4}});
+        let a = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{"libllama.so":"d"},"media_tools":{},"model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"video_fps":4}});
         let mut b = a.clone();
         b["settings"]["ubatch"] = json!(1024);
         assert!(same_contract(&a, &b).is_ok());

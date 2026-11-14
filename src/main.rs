@@ -95,6 +95,21 @@ fn backend_libraries(server: &Path) -> Result<Value> {
     Ok(serde_json::to_value(hashes)?)
 }
 
+fn media_tools() -> Result<Value> {
+    let path = std::env::var_os("PATH").context("PATH is missing")?;
+    let mut tools = serde_json::Map::new();
+    for name in ["ffmpeg", "ffprobe"] {
+        let file = std::env::split_paths(&path)
+            .map(|dir| dir.join(name))
+            .find(|file| file.is_file())
+            .with_context(|| format!("{name} is required for native video"))?;
+        let version = Command::new(&file).arg("-version").output()?;
+        ensure!(version.status.success(), "{name} -version failed");
+        tools.insert(name.into(), json!({"sha256":hash_file(&file)?,"version":String::from_utf8_lossy(&version.stdout).lines().next()}));
+    }
+    Ok(Value::Object(tools))
+}
+
 fn image(frame: usize) -> Result<Vec<u8>> {
     let size = 448usize;
     let mut pixels = vec![240u8; size * size * 3];
@@ -248,6 +263,7 @@ fn run(args: Args) -> Result<()> {
     let video = args.video.as_ref().map(fs::read).transpose()?;
     let metadata = json!({"schema":2,"label":args.label,"backend":"llama.cpp", "server_sha256":hash_file(&args.server)?,
         "backend_libraries":backend_libraries(&args.server)?,
+        "media_tools":if args.video.is_some() { media_tools()? } else {json!({})},
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
         "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps},
