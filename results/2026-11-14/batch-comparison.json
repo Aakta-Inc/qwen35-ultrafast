@@ -1,0 +1,47 @@
+{
+  "baseline": "baseline-512",
+  "candidate": "candidate-1024",
+  "cases": [
+    {
+      "baseline_mean_ms": 1189.8904262,
+      "candidate_mean_ms": 1191.4088784,
+      "case": "images-0",
+      "sample_outputs_equal": true,
+      "speedup": 0.9987254986700794,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 124.9090076,
+      "candidate_mean_ms": 125.02271,
+      "case": "images-1",
+      "sample_outputs_equal": true,
+      "speedup": 0.9990905460295972,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 3996.1931308,
+      "candidate_mean_ms": 4008.5699566000003,
+      "case": "images-48",
+      "sample_outputs_equal": true,
+      "speedup": 0.9969124086809007,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 669.9115612,
+      "candidate_mean_ms": 671.070149,
+      "case": "images-8",
+      "sample_outputs_equal": true,
+      "speedup": 0.9982735220725785,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 1009.073422,
+      "candidate_mean_ms": 1010.9806784,
+      "case": "native-video",
+      "sample_outputs_equal": true,
+      "speedup": 0.9981134590989231,
+      "synthetic_gate_passes": false
+    }
+  ],
+  "scope": "same executable/model, batching configuration comparison; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"
+}

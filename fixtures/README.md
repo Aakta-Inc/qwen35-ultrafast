@@ -13,3 +13,5 @@ ffmpeg -nostdin -v error \
 ```
 
 Use the committed binary for exact comparisons: encoder versions can change encoded bytes. The model receives `input_video`, not a list of independent image attachments. The harness explicitly sets video FPS (default 4) and records the file hash. Server logs must confirm the frames actually processed; the requested rate alone is not proof of the processed count. This fixture tests basic media handling and compute cost, not real-world reasoning or action recognition.
+
+Observed on the pinned Qwen backend: its model-specific policy overrides `--video-fps 4` and samples **24 frames at 2 FPS**, grouped into temporal pairs. This was confirmed in a debug run, not inferred solely from the requested setting. See `results/2026-11-14/video-diagnostic.txt`. Keep this effective sampling policy unchanged in a performance comparison.

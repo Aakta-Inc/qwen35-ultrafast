@@ -1,0 +1,5 @@
+0.00.430.747 I load_tensors: offloaded 33/33 layers to GPU
+0.00.730.413 I load_tensors: offloaded 33/33 layers to GPU
+0.01.704.929 D configure: 448x448 fps=2.00 duration=12.00s n_frames=48 target_frames=24
+0.02.769.353 D configure: 448x448 fps=2.00 duration=12.00s n_frames=48 target_frames=24
+0.03.816.757 D configure: 448x448 fps=2.00 duration=12.00s n_frames=48 target_frames=24

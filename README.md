@@ -85,3 +85,9 @@ The comparator rejects changes in model/projector/executable identity, request h
 For the additional native-video case, add `--video fixtures/moving-rectangle.mp4 --video-fps 4`. FFmpeg must be installed for the native backend's video decoder. This case uses `input_video` and is labeled separately from image sequences. See [fixture provenance](fixtures/README.md). Keep FPS and the fixture hash fixed across comparisons.
 
 Native video requires an FFprobe build supporting the `stream_side_data` query used by the pinned backend. The initial host FFmpeg 4.4.2 failed this query; the measured runs use an isolated FFmpeg/FFprobe 7.0.2 build on `PATH`. The harness records both tool hashes/versions. No global upgrade is needed. For a CUDA toolkit outside standard system directories, expose its `lib`/`lib64` directory through `LD_LIBRARY_PATH` during linking and execution.
+
+## First measured results
+
+On the RTX 5060, the initial native reference averaged **125 ms for one image**, **3.996 s for 48 independent images**, and **1.009 s for the 12-second synthetic native-video case**. The video backend sampled 24 of the source's 48 frames; this is not equivalent to the 48-image workload. Increasing the physical processing batch from 512 to 1,024 showed no useful gain. The independent CUDA primitive achieved 2–2.75× versus its decomposed reference, but is not integrated into inference. **No whole-model speedup is established yet.**
+
+[Raw measurements, checks and limitations](results/2026-11-14/README.md).
