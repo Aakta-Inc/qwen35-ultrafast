@@ -91,3 +91,7 @@ Native video requires an FFprobe build supporting the `stream_side_data` query u
 On the RTX 5060, the initial native reference averaged **125 ms for one image**, **3.996 s for 48 independent images**, and **1.009 s for the 12-second synthetic native-video case**. The video backend sampled 24 of the source's 48 frames; this is not equivalent to the 48-image workload. Increasing the physical processing batch from 512 to 1,024 showed no useful gain. The independent CUDA primitive achieved 2–2.75× versus its decomposed reference, but is not integrated into inference. **No whole-model speedup is established yet.**
 
 [Raw measurements, checks and limitations](results/2026-11-14/README.md).
+
+## Profile-guided follow-up
+
+[Post-tower tracing and dispatch experiment](results/2026-11-14-followup/README.md): matrix work dominates. Routing larger quantized projections to cuBLAS increased visual latency by 21–32%, so the candidate was rejected. The default reference remains unchanged. [C++ GPU profiling](profiling/README.md) and [controlled backend experiments](experiments/README.md) now make future tests reproducible; instrumented runs cannot pass the performance comparator.

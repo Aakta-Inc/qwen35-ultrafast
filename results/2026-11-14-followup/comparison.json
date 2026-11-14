@@ -1,0 +1,102 @@
+{
+  "allow_backend_change": true,
+  "baseline": "followup-reference",
+  "baseline_backend": {
+    "libraries": {
+      "libggml-base.so": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1.0.0": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-cpu.so": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1.0.0": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cuda.so": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1.0.0": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml.so": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1.0.0": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libllama-common.so": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1.0.0": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-server-impl.so": "58c966c5a2d6ae7909e74fe87b5701dc302857ce9b5752eef75cc80d392eda08",
+      "libllama.so": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1.0.0": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libmtmd.so": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1.0.0": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827"
+    },
+    "server": "9e15612c70d278cf0033a6eac6ccab47d6532d040283ebed6bea192053ae32b3"
+  },
+  "candidate": "prefill-cublas",
+  "candidate_backend": {
+    "libraries": {
+      "libggml-base.so": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1.0.0": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-cpu.so": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1.0.0": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cuda.so": "b1f4ef8115df95af9e1ff3b3f8780890fac73c193a23b2f46e920698c63d9b1c",
+      "libggml-cuda.so.1": "b1f4ef8115df95af9e1ff3b3f8780890fac73c193a23b2f46e920698c63d9b1c",
+      "libggml-cuda.so.1.0.0": "b1f4ef8115df95af9e1ff3b3f8780890fac73c193a23b2f46e920698c63d9b1c",
+      "libggml.so": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1.0.0": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libllama-common.so": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1.0.0": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-server-impl.so": "58c966c5a2d6ae7909e74fe87b5701dc302857ce9b5752eef75cc80d392eda08",
+      "libllama.so": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1.0.0": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libmtmd.so": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1.0.0": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827"
+    },
+    "server": "9e15612c70d278cf0033a6eac6ccab47d6532d040283ebed6bea192053ae32b3"
+  },
+  "cases": [
+    {
+      "baseline_mean_ms": 1188.6401092,
+      "candidate_mean_ms": 1194.0604194,
+      "case": "images-0",
+      "sample_outputs_equal": true,
+      "speedup": 0.9954606064216386,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 124.3139042,
+      "candidate_mean_ms": 149.9213006,
+      "case": "images-1",
+      "sample_outputs_equal": true,
+      "speedup": 0.8291944086829781,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 3982.1811377999998,
+      "candidate_mean_ms": 5236.7318136,
+      "case": "images-48",
+      "sample_outputs_equal": true,
+      "speedup": 0.7604325139313259,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 663.9690806,
+      "candidate_mean_ms": 872.9887331999998,
+      "case": "images-8",
+      "sample_outputs_equal": true,
+      "speedup": 0.7605700455791404,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 1007.1933740000001,
+      "candidate_mean_ms": 1316.7248292,
+      "case": "native-video",
+      "sample_outputs_equal": true,
+      "speedup": 0.7649232031357218,
+      "synthetic_gate_passes": false
+    }
+  ],
+  "scope": "matched model, inputs and evaluated work; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"
+}
