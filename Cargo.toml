@@ -2,6 +2,8 @@
 name = "qwen35-ultrafast"
 version = "0.1.0"
 edition = "2024"
+default-run = "qwen35-ultrafast"
+
 license = "Apache-2.0"
 description = "Native reproducible Qwen3.5-4B inference experiments"
 

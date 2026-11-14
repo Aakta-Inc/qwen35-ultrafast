@@ -60,3 +60,24 @@ cargo clippy --all-targets --locked -- -D warnings
 ```
 
 Original code: Apache-2.0. Dependencies retain their licenses. See [design and provenance](docs/plans/2026-11-14-design.md).
+
+## Independent CUDA experiment
+
+`cuda/gated_rmsnorm.cu` implements FP32 RMS normalization plus SiLU gating for the 128-value DeltaNet heads. It is **not yet integrated into model inference**. The C API accepts effective norm weights (without any implicit +1 transformation).
+
+```sh
+cmake -S . -B build/kernels -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=Release
+cmake --build build/kernels -j 4
+ctest --test-dir build/kernels --output-on-failure
+build/kernels/qwen35-kernel-bench
+```
+
+The microbenchmark compares an explicit three-operation implementation with the fused implementation, **both using CUDA graphs**, and checks both against independent double-precision CPU calculations. It includes partial warps of rows, zero norm inputs, varied weights, and positive/negative gates. It does not compare with llama.cpp's own fusion, and its speedup must never be reported as a model speedup. Architecture `120` is specific to the first measured RTX 5060; choose the architecture for your own GPU.
+
+Compare a batching candidate to its baseline:
+
+```sh
+cargo run --release --locked --bin compare -- runs/baseline runs/candidate
+```
+
+The comparator rejects changes in model/projector/executable identity, request hashes, evaluated token counts, graph policy and incomplete runs. It reports output agreement per sample. Hardware/thermal isolation must also be verified from the recorded metadata; agreement on these synthetic cases is not a quality benchmark.
