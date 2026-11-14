@@ -21,6 +21,7 @@ fn same_contract(a: &Value, b: &Value) -> Result<()> {
         "schema",
         "backend",
         "server_sha256",
+        "backend_libraries",
         "model_sha256",
         "mmproj_sha256",
         "repeats",
@@ -35,21 +36,26 @@ fn same_contract(a: &Value, b: &Value) -> Result<()> {
         "flash_attention",
         "cache_prompt",
         "parallel",
+        "video_fps",
     ] {
         ensure!(
             !a["settings"][key].is_null() && a["settings"][key] == b["settings"][key],
             "incompatible setting {key}"
         );
     }
+    ensure!(
+        a["video_sha256"] == b["video_sha256"],
+        "video fixtures differ"
+    );
     Ok(())
 }
-fn samples(dir: &Path) -> Result<BTreeMap<u64, Vec<Value>>> {
-    let mut result = BTreeMap::<u64, Vec<Value>>::new();
+fn samples(dir: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
+    let mut result = BTreeMap::<String, Vec<Value>>::new();
     for line in fs::read_to_string(dir.join("samples.jsonl"))?.lines() {
         let v: Value = serde_json::from_str(line)?;
         if v["warmup"] == false {
             result
-                .entry(v["images"].as_u64().context("missing image count")?)
+                .entry(v["case"].as_str().context("missing case name")?.to_owned())
                 .or_default()
                 .push(v);
         }
@@ -106,7 +112,7 @@ fn compare(a_dir: &Path, b_dir: &Path) -> Result<Value> {
             a_total += at;
             b_total += bt;
         }
-        cases.push(json!({"images":count,"baseline_mean_ms":a_total/repeats as f64,"candidate_mean_ms":b_total/repeats as f64,"speedup":a_total/b_total,"sample_outputs_equal":outputs_equal,"synthetic_gate_passes":outputs_equal && a_total/b_total >= 1.15}));
+        cases.push(json!({"case":count,"baseline_mean_ms":a_total/repeats as f64,"candidate_mean_ms":b_total/repeats as f64,"speedup":a_total/b_total,"sample_outputs_equal":outputs_equal,"synthetic_gate_passes":outputs_equal && a_total/b_total >= 1.15}));
     }
     Ok(
         json!({"baseline":a_summary["label"],"candidate":b_summary["label"],"cases":cases,"scope":"same executable/model, batching configuration comparison; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"}),
@@ -125,7 +131,7 @@ mod tests {
     use super::*;
     #[test]
     fn rejects_model_and_graph_policy_changes() {
-        let a = json!({"schema":1,"backend":"llama.cpp","server_sha256":"a","model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512}});
+        let a = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{"libllama.so":"d"},"model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"video_fps":4}});
         let mut b = a.clone();
         b["settings"]["ubatch"] = json!(1024);
         assert!(same_contract(&a, &b).is_ok());
@@ -133,6 +139,9 @@ mod tests {
         assert!(same_contract(&a, &b).is_err());
         b = a.clone();
         b["settings"]["graphs"] = json!(false);
+        assert!(same_contract(&a, &b).is_err());
+        b = a.clone();
+        b["backend_libraries"]["libllama.so"] = json!("changed");
         assert!(same_contract(&a, &b).is_err());
     }
 }

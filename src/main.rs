@@ -44,6 +44,11 @@ struct Args {
     /// Comma-separated counts of separately encoded synthetic images. Not native video.
     #[arg(long, value_delimiter = ',', default_value = "0,1,8,48")]
     images: Vec<usize>,
+    /// Add a native video case using this public/synthetic MP4 fixture.
+    #[arg(long)]
+    video: Option<PathBuf>,
+    #[arg(long, default_value_t = 4)]
+    video_fps: u32,
 }
 
 struct Server(Child);
@@ -69,6 +74,25 @@ fn hash_file(path: &Path) -> Result<String> {
 }
 fn hash_bytes(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
+}
+
+fn backend_libraries(server: &Path) -> Result<Value> {
+    let parent = server
+        .canonicalize()?
+        .parent()
+        .context("server has no parent")?
+        .to_path_buf();
+    let mut hashes = std::collections::BTreeMap::new();
+    for entry in fs::read_dir(parent)? {
+        let entry = entry?;
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if entry.path().is_file()
+            && (name.ends_with(".so") || name.contains(".so.") || name.ends_with(".dylib"))
+        {
+            hashes.insert(name, hash_file(&entry.path())?);
+        }
+    }
+    Ok(serde_json::to_value(hashes)?)
 }
 
 fn image(frame: usize) -> Result<Vec<u8>> {
@@ -135,6 +159,16 @@ fn validate_response(response: &Value) -> Result<()> {
     );
     Ok(())
 }
+
+fn video_request(bytes: &[u8]) -> Result<Value> {
+    ensure!(!bytes.is_empty(), "video fixture is empty");
+    let mut body = request(1)?;
+    body["messages"][0]["content"] = json!([
+        {"type":"input_video","input_video":{"data":STANDARD.encode(bytes)}},
+        {"type":"text","text":"Is a red rectangle visible? Answer YES or NO."}
+    ]);
+    Ok(body)
+}
 fn percentile(values: &mut [f64], q: f64) -> f64 {
     values.sort_by(f64::total_cmp);
     let index = (values.len() - 1) as f64 * q;
@@ -154,6 +188,7 @@ fn gpu_snapshot() -> Result<String> {
     Ok(String::from_utf8(result.stdout)?)
 }
 fn run(args: Args) -> Result<()> {
+    ensure!(args.video_fps > 0, "video FPS must be positive");
     ensure!(
         args.repeats >= 2,
         "at least two measured repetitions required"
@@ -201,6 +236,8 @@ fn run(args: Args) -> Result<()> {
         "on".into(),
         "--jinja".into(),
         "--no-webui".into(),
+        "--video-fps".into(),
+        args.video_fps.to_string(),
     ];
     let version = Command::new(&args.server).arg("--version").output()?;
     ensure!(
@@ -208,11 +245,14 @@ fn run(args: Args) -> Result<()> {
         "server --version failed: {}",
         String::from_utf8_lossy(&version.stderr)
     );
-    let metadata = json!({"schema":1,"label":args.label,"backend":"llama.cpp", "server_sha256":hash_file(&args.server)?,
+    let video = args.video.as_ref().map(fs::read).transpose()?;
+    let metadata = json!({"schema":2,"label":args.label,"backend":"llama.cpp", "server_sha256":hash_file(&args.server)?,
+        "backend_libraries":backend_libraries(&args.server)?,
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
-        "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1},
-        "repeats":args.repeats,"warmups_per_case":1,"input":"synthetic 448x448 PNG image sequence; NOT native video", "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server image processing"});
+        "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps},
+        "repeats":args.repeats,"warmups_per_case":1,"video_sha256":video.as_ref().map(|v| hash_bytes(v)),
+        "input":"synthetic 448x448 PNG image sequences; optional separately labeled native video", "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing"});
     write_json(&args.out.join("metadata.json"), &metadata)?;
     let log = File::create(args.out.join("server.log"))?;
     let mut command = Command::new(&args.server);
@@ -254,8 +294,15 @@ fn run(args: Args) -> Result<()> {
         .create_new(true)
         .open(args.out.join("samples.jsonl"))?;
     let mut summaries = Vec::new();
+    let mut cases = Vec::new();
     for count in &args.images {
-        let body = serde_json::to_vec(&request(*count)?)?;
+        cases.push((format!("images-{count}"), request(*count)?));
+    }
+    if let Some(bytes) = video {
+        cases.push(("native-video".to_string(), video_request(&bytes)?));
+    }
+    for (case, request) in cases {
+        let body = serde_json::to_vec(&request)?;
         let mut times = Vec::new();
         let mut outputs = Vec::new();
         let mut decode = Vec::new();
@@ -268,7 +315,7 @@ fn run(args: Args) -> Result<()> {
                 .into_json()?;
             let elapsed = start.elapsed().as_secs_f64() * 1000.;
             validate_response(&response)?;
-            let sample = json!({"images":count,"warmup":repetition==0,"repetition":repetition,"request_sha256":hash_bytes(&body),"wall_ms":elapsed,"response":response,"gpu_after":gpu_snapshot()?});
+            let sample = json!({"case":case,"warmup":repetition==0,"repetition":repetition,"request_sha256":hash_bytes(&body),"wall_ms":elapsed,"response":response,"gpu_after":gpu_snapshot()?});
             serde_json::to_writer(&mut raw, &sample)?;
             raw.write_all(b"\n")?;
             raw.flush()?;
@@ -281,10 +328,10 @@ fn run(args: Args) -> Result<()> {
                         .context("missing decode throughput")?,
                 );
             }
-            eprintln!("images={count} repetition={repetition} wall_ms={elapsed:.2}");
+            eprintln!("case={case} repetition={repetition} wall_ms={elapsed:.2}");
         }
         let mean = times.iter().sum::<f64>() / times.len() as f64;
-        summaries.push(json!({"images":count,"request_sha256":hash_bytes(&body),"mean_wall_ms":mean,"p50_wall_ms":percentile(&mut times,0.5),"p95_wall_ms":percentile(&mut times,0.95),"serial_requests_per_minute":60000./mean,"mean_decode_tokens_per_second":decode.iter().sum::<f64>()/decode.len() as f64,"outputs_identical":outputs.windows(2).all(|w| w[0]==w[1]),"outputs":outputs}));
+        summaries.push(json!({"case":case,"request_sha256":hash_bytes(&body),"mean_wall_ms":mean,"p50_wall_ms":percentile(&mut times,0.5),"p95_wall_ms":percentile(&mut times,0.95),"serial_requests_per_minute":60000./mean,"mean_decode_tokens_per_second":decode.iter().sum::<f64>()/decode.len() as f64,"outputs_identical":outputs.windows(2).all(|w| w[0]==w[1]),"outputs":outputs}));
     }
     write_json(
         &args.out.join("summary.json"),
@@ -329,6 +376,13 @@ mod tests {
         let decoder = png::Decoder::new(std::io::Cursor::new(image(0).unwrap()));
         let reader = decoder.read_info().unwrap();
         assert_eq!((reader.info().width, reader.info().height), (448, 448));
+        let video = video_request(b"fixture").unwrap();
+        assert_eq!(video["messages"][0]["content"][0]["type"], "input_video");
+        assert_eq!(
+            video["messages"][0]["content"][0]["input_video"]["data"],
+            STANDARD.encode(b"fixture")
+        );
+        assert!(video_request(&[]).is_err());
     }
     #[test]
     fn summary_quantiles_use_interpolation() {

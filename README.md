@@ -81,3 +81,5 @@ cargo run --release --locked --bin compare -- runs/baseline runs/candidate
 ```
 
 The comparator rejects changes in model/projector/executable identity, request hashes, evaluated token counts, graph policy and incomplete runs. It reports output agreement per sample. Hardware/thermal isolation must also be verified from the recorded metadata; agreement on these synthetic cases is not a quality benchmark.
+
+For the additional native-video case, add `--video fixtures/moving-rectangle.mp4 --video-fps 4`. FFmpeg must be installed for the native backend's video decoder. This case uses `input_video` and is labeled separately from image sequences. See [fixture provenance](fixtures/README.md). Keep FPS and the fixture hash fixed across comparisons.
