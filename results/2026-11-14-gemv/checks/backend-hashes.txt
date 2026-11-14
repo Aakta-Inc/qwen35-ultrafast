@@ -1,0 +1,7 @@
+33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97  build/reference/bin/libggml-cuda.so
+11e2a090168dc3824bc4b90a242bee0374a11326c60dfe07f77e14469457200a  build/qwen-two-row/bin/libggml-cuda.so
+231de977751078b253aaaa439eec3f5b2dcac47872443b468fa3458d50bb175b  build/qwen-two-row-two-warp/bin/libggml-cuda.so
+0dc94c336846ca008ad168cde6fcc868641cad808d77c1d2905be2baae74bdf7  build/qwen-two-row-one-warp/bin/libggml-cuda.so
+1812c7d8e0f5e50596988f516229d760a553673ed4a3c8ab0830ee1535d93f9a  build/qwen-unfused-two-row/bin/libggml-cuda.so
+77aa0163b6631d43c214423771ea948d6b5e349967ade19fc45b85fdb1f4b9b5  build/qwen-tile64/bin/libggml-cuda.so
+3595bf3aa9ec128bae60a1613951c4256f5bbfd80444429b2629b0b0e7bbc05a  build/qwen-row64/bin/libggml-cuda.so

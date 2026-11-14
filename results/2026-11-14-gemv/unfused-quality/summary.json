@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "case": "images-0",
+      "mean_decode_tokens_per_second": 82.97066563432313,
+      "mean_wall_ms": 1638.4896915,
+      "outputs": [
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of interconnected mechanical components. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental principles remain the same. Here is a detailed breakdown of how the key components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the rim to the hub), and the **hub** (the central part that holds the axle).\n\n",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of interconnected mechanical components. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental principles remain the same. Here is a detailed breakdown of how the key components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the rim to the hub), and the **hub** (the central part that holds the axle).\n\n"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1638.4896915,
+      "p95_wall_ms": 1727.5428487499998,
+      "request_sha256": "5f6b46f20a3419898f467bac9b029000d19f2b13b96e51f5fb36c4eee063442e",
+      "serial_requests_per_minute": 36.61908909849251
+    },
+    {
+      "case": "images-1",
+      "mean_decode_tokens_per_second": 67.6888415899037,
+      "mean_wall_ms": 193.08272799999997,
+      "outputs": [
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 193.08272799999997,
+      "p95_wall_ms": 196.68262539999998,
+      "request_sha256": "6870b798011955922d2f8d02889c21585c157ebd70de3ca69d9eca4a5cc80a4c",
+      "serial_requests_per_minute": 310.74762937884327
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4328 MiB, 15 %, 580.178.04, 85.77 W, 43\n",
+  "label": "gemv-unfused-quality-contended",
+  "quality": "synthetic smoke only; no real-world accuracy claim"
+}

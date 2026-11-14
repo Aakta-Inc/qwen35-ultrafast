@@ -1,0 +1,2 @@
+truncated output dump
+TRUNCATION_REJECTED

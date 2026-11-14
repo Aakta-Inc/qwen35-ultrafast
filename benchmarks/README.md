@@ -9,13 +9,14 @@ export LD_LIBRARY_PATH="$REFERENCE_LIB_DIR:$CUDA_ROOT/lib:$LD_LIBRARY_PATH"
 c++ -std=c++17 -O2 -Wall -Wextra -Werror benchmarks/projection_probe.cpp \
   -I vendor/llama.cpp/ggml/include -L "$REFERENCE_LIB_DIR" \
   -lggml-cuda -lggml-base -lggml -o build/projection-probe
-build/projection-probe MODEL.gguf reference.bin > reference.csv
+mkdir -p runs
+build/projection-probe MODEL.gguf runs/projection-reference.bin > runs/projection-reference.csv
 ```
 
 Run the same executable with the candidate library directory first in `LD_LIBRARY_PATH`, saving a new dump. Verify the loaded library hashes. Compare:
 
 ```sh
-build/projection-probe --compare reference.bin candidate.bin
+build/projection-probe --compare runs/projection-reference.bin runs/projection-candidate.bin
 ```
 
 The checker requires matching tensor/shape/seed headers, finite values and completed dumps. It reports bit differences, maximum absolute error and maximum `abs(candidate-reference)/(1+abs(reference))`; it fails above `2e-5`. This fixed numerical tolerance is a projection regression check, not permission to change whole-model answers. Exact output agreement is checked separately by the Rust full-model comparator.
@@ -26,7 +27,7 @@ Each shape uses three deterministic activation vectors: zero plus two nonzero si
 
 ```sh
 compute-sanitizer --tool memcheck --error-exitcode 86 \
-  build/projection-probe MODEL.gguf checked.bin --check
+  build/projection-probe MODEL.gguf runs/projection-checked.bin --check
 ```
 
 Dumps use a versioned header, per-case contracts, raw native float values, and a completion marker. They are local diagnostics, not a portable model format. Keep model files and bulky dumps outside source control; publish hashes, numerical-check logs and CSV summaries instead. Missing/malformed files, unsupported models, GPU failures and incomplete dumps fail explicitly.

@@ -1,0 +1,7 @@
+c09736950647e92ad2f1890bd958808f8f5108d547d5598152bcfe0d580a27dd  build/projection-probe
+00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4  models/Qwen3.5-4B-Q4_K_M.gguf
+750a233139377aadb63245b8ab274359759a2d94f46ab0dcf2f6ffa96e67e59e  runs/qwen-gemv/qwen-two-row-check-v2.bin
+259ff9c66a6f86d2b87ad6b85edca0e15e2d5c26a12651fcd3b39766c6f21950  runs/qwen-gemv/qwen-two-row-one-warp-check-v2.bin
+8dee85cebddd3ff4c87104640dea37444f147009a0e7cb684cc28d93bed736ef  runs/qwen-gemv/qwen-two-row-two-warp-check-v2.bin
+750a233139377aadb63245b8ab274359759a2d94f46ab0dcf2f6ffa96e67e59e  runs/qwen-gemv/reference-v2.bin
+750a233139377aadb63245b8ab274359759a2d94f46ab0dcf2f6ffa96e67e59e  runs/qwen-gemv/unfused-two-row-v2.bin

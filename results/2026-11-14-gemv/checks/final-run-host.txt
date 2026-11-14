@@ -1,0 +1,6 @@
+Sat Nov 14 15:57:40 UTC 2026
+ 09:57:40 up 28 days, 18:08,  1 user,  load average: 11.77, 11.32, 6.57
+     10 ffmpeg
+      1 llama-server
+      2 python3
+build/reference/bin/llama-server, 4312 MiB

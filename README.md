@@ -95,3 +95,5 @@ On the RTX 5060, the initial native reference averaged **125 ms for one image**,
 ## Profile-guided follow-up
 
 [Post-tower tracing and dispatch experiment](results/2026-11-14-followup/README.md): matrix work dominates. Routing larger quantized projections to cuBLAS increased visual latency by 21–32%, so the candidate was rejected. The default reference remains unchanged. [C++ GPU profiling](profiling/README.md) and [controlled backend experiments](experiments/README.md) now make future tests reproducible; instrumented runs cannot pass the performance comparator.
+
+[Qwen quantized matrix experiments](results/2026-11-14-gemv/README.md): six layout variants tested on the post tower, with actual-weight projection checks covering 898,560 decode values and 30.1 million prefill values. The conservative candidate was bit-exact at projection level, passed CUDA memory checking, and preserved the synthetic answers in both full-model run orders. Whole-model ratios remained 0.983–1.003x under CPU contention, so it was not promoted. The 1.15x target remains open.

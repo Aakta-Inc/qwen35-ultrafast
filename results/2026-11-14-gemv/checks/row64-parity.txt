@@ -1,0 +1,1 @@
+cases=33 values=30105600 bit_differences=4908960 max_abs=3.33786e-06 max_abs_over_one_plus_reference=1.34344e-06 tolerance=2e-5 pass=1
