@@ -1,0 +1,9 @@
+========= COMPUTE-SANITIZER
+device=NVIDIA GeForce RTX 5060; synthetic FP32 norm+gate microbenchmark; NOT model speedup
+rows,split_graph_us,fused_graph_us,split_over_fused,max_absolute_error
+1,51.403809,24.994207,2.056629,0
+7,51.110912,25.179199,2.029886,3.76064553e-06
+32,51.676353,26.018816,1.986115,4.80961843e-06
+256,99.692924,50.216290,1.985271,6.69847244e-06
+6144,1755.031738,785.854004,2.233280,7.2957052e-06
+========= ERROR SUMMARY: 0 errors
