@@ -60,3 +60,11 @@ The hypothesis is that evaluating the final few prompt tokens separately adds av
 `qwen-packed-no-checkpoints-initial.patch` is retained only to reproduce the rejected first attempt. It incorrectly used the tokenizer's media-capability flag to identify visual requests and therefore changed text-only evaluation grouping. The corrected patch checks the actual first media chunk, restoring the reference text path. Do not use the initial patch as the candidate.
 
 `qwen-packed-boundary.patch` is a separate, rejected extension of the corrected checkpoint-free patch. It keeps compatible image chunks inside the shared prompt batch when the next iteration starts at a media boundary, while retaining the reference fallback for oversized or non-causal chunks. The real-media screen showed 0.992–1.006x versus the corrected candidate, with no useful video gain. Apply it only as an isolated reproduction experiment, not stacked with another patch.
+
+## Matrix scheduling and caption diagnostics
+
+`qwen-full-tile-mmq.patch` forces complete output tiles for selected dense Qwen prefill projections on SM120, avoiding split-reduction fixup traffic. It passed the fixed numerical tolerance but slowed the projection screen, retained the differing video caption and introduced a fruit-color capitalization difference. It is rejected, not a new default.
+
+`qwen-prefill-two-blocks.patch` is an **unbuilt, untested** alternative: 64-row/128-column tiles with 128 threads, plus up to two split-work blocks per SM for selected unfused dense Qwen shapes. It tests whether smaller block resources and additional independently scheduled work help. Its tile configuration also affects fused operations; their correctness and performance must be measured. Do not stack these patches. Apply either to the clean pinned source, retain separate binaries, and restore source and reference libraries afterward.
+
+See [projection checks, caption token probabilities and realistic-media results](../results/2026-11-14-matrix-caption/README.md). The next experiment still needs an idle tower slot, compilation, numerical and memory checks, then unchanged-quality full-model comparisons if its matrix screen improves.

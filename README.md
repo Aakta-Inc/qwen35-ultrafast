@@ -82,6 +82,8 @@ cargo run --release --locked --bin compare -- runs/baseline runs/candidate
 
 The comparator rejects changes in model/projector/executable identity, request hashes, evaluated token counts, graph policy and incomplete runs. It reports output agreement per sample. Hardware/thermal isolation must also be verified from the recorded metadata; agreement on these synthetic cases is not a quality benchmark.
 
+For caption diagnostics, run both backends with `--token-logprobs` and compare with `--quality-only --allow-backend-change`. The report records the first differing token and each backend's top alternatives at that position, after an identical generated prefix. These instrumented runs are rejected by performance comparison; use separate ordinary runs for speed measurements.
+
 For the additional native-video case, add `--video fixtures/moving-rectangle.mp4 --video-fps 4`. FFmpeg must be installed for the native backend's video decoder. This case uses `input_video` and is labeled separately from image sequences. See [fixture provenance](fixtures/README.md). Keep FPS and the fixture hash fixed across comparisons.
 
 Native video requires an FFprobe build supporting the `stream_side_data` query used by the pinned backend. The initial host FFmpeg 4.4.2 failed this query; the measured runs use an isolated FFmpeg/FFprobe 7.0.2 build on `PATH`. The harness records both tool hashes/versions. No global upgrade is needed. For a CUDA toolkit outside standard system directories, expose its `lib`/`lib64` directory through `LD_LIBRARY_PATH` during linking and execution.
@@ -97,6 +99,8 @@ On the RTX 5060, the initial native reference averaged **125 ms for one image**,
 [Post-tower tracing and dispatch experiment](results/2026-11-14-followup/README.md): matrix work dominates. Routing larger quantized projections to cuBLAS increased visual latency by 21–32%, so the candidate was rejected. The default reference remains unchanged. [C++ GPU profiling](profiling/README.md) and [controlled backend experiments](experiments/README.md) now make future tests reproducible; instrumented runs cannot pass the performance comparator.
 
 [Qwen quantized matrix experiments](results/2026-11-14-gemv/README.md): six layout variants tested on the post tower, with actual-weight projection checks covering 898,560 decode values and 30.1 million prefill values. The conservative candidate was bit-exact at projection level, passed CUDA memory checking, and preserved the synthetic answers in both full-model run orders. Whole-model ratios remained 0.983–1.003x under CPU contention, so it was not promoted. The 1.15x target remains open.
+
+[Matrix scheduling and caption investigation](results/2026-11-14-matrix-caption/README.md): the caption branches at a reproducible close ranking between `in` and `near`. A full-tile matrix experiment passes numerical checks over 145 million values but slows the projection screen and fails exact-output parity on two of ten real-media cases. It is rejected. A smaller-tile/two-block alternative is prepared but untested; the consistent >15% quality-preserving target remains open.
 
 [Idle-tower sampling experiment](results/2026-11-14-sampling/README.md): moving greedy token selection to the backend preserved the tested outputs but improved text latency by only about 1%, with mixed visual results. The default remains CPU sampling. To reproduce, add `--backend-sampling` to the candidate runner and compare with `--allow-sampling-change`; executable/library hashes, batch policy, inputs and evaluated work must still match.
 

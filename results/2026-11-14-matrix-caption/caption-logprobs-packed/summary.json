@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {
+      "case": "pedestrians-later",
+      "mean_decode_tokens_per_second": 97.1917656767238,
+      "mean_wall_ms": 1599.510425,
+      "outputs": [
+        "A group of people are walking on a sidewalk near a grassy area and a building with a white van parked nearby.",
+        "A group of people are walking on a sidewalk near a grassy area and a building with a white van parked nearby."
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1599.510425,
+      "p95_wall_ms": 1609.4103728,
+      "request_sha256": "e52b2ea15941c8558423858fb775f46aeb6ade610e0f62f42f599ec7f34e2bb5",
+      "serial_requests_per_minute": 37.511477926128556
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4340 MiB, 17 %, 580.178.04, 136.71 W, 58\n",
+  "label": "caption-logprobs-packed",
+  "quality": "small fixture suite only; no general accuracy claim"
+}

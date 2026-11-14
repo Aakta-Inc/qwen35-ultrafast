@@ -1,0 +1,17 @@
+diff --git a/ggml/src/ggml-cuda/mmq.cuh b/ggml/src/ggml-cuda/mmq.cuh
+index d645a8a..7eb1002 100644
+--- a/ggml/src/ggml-cuda/mmq.cuh
++++ b/ggml/src/ggml-cuda/mmq.cuh
+@@ -1520,5 +1520,11 @@ static void launch_mul_mat_q(ggml_backend_cuda_context & ctx, const mmq_args & a
+ 
+     const int nwork = ntiles_dst * ((args.ncols_x + config.K_vram - 1) / config.K_vram); // Maximum number of CUDA blocks that can do useful work.
+-    const dim3 block_nums_stream_k(GGML_CUDA_CC_IS_NVIDIA(cc) && tiles_efficiency_percent >= 90 ? ntiles_dst : std::min(nsm, nwork), 1, 1);
++    // Keep each dense Qwen prefill tile's reduction in one block on SM120.
++    // This avoids partial-result traffic and batch-dependent split-K rounding.
++    const bool qwen_full_tiles = cc == GGML_CUDA_CC_BLACKWELL && !args.ids_dst &&
++        args.ncols_y >= 32 && args.ncols_y <= 512 &&
++        (args.ncols_x == 2560 || args.ncols_x == 4096 || args.ncols_x == 9216) &&
++        (type == GGML_TYPE_Q4_K || type == GGML_TYPE_Q5_K || type == GGML_TYPE_Q6_K);
++    const dim3 block_nums_stream_k((qwen_full_tiles || (GGML_CUDA_CC_IS_NVIDIA(cc) && tiles_efficiency_percent >= 90)) ? ntiles_dst : std::min(nsm, nwork), 1, 1);
+ 
+     const bool fixup_needed = ntiles_dst % block_nums_stream_k.x != 0;
