@@ -34,3 +34,17 @@ The `qwen-*-gemv.patch` experiments keep the GGUF weights and activation quantiz
 - `qwen-prefill-row64.patch`: shorter row tiles with 128 threads for Blackwell Q4_K/Q5_K/Q6_K at column-tile width 112. This tests a different shared-memory/occupancy tradeoff. It is an experimental backend configuration, not a generally validated dispatch policy.
 
 Apply **one patch at a time** to a clean pinned reference source tree, then rebuild. These are mutually exclusive experiments, not a patch stack. Retain separate binary/library directories and run the [projection probe](../benchmarks/README.md), then full-model comparisons. Results and acceptance decisions are recorded in [the GEMV experiment report](../results/2026-11-14-gemv/README.md). None of these patches changes the default submodule.
+
+## Qwen mixed text/image prefill
+
+`qwen-packed-prefill.patch` combines text separators and complete image-embedding chunks in the existing prompt batch. The original path decodes image chunks separately. The candidate reuses the pinned backend's embedding ownership and MRoPE position construction; it changes neither the vision encoder nor image/frame selection, weights, quantization, batch limits or sampler.
+
+The experimental path is limited to uncached, single-slot causal Qwen3.5 completion without adapters, speculative decoding or shared prompt prefixes. Unsupported or non-causal chunks keep the reference path. A chunk that does not fit is left for the next iteration. This is a patch to the MIT-licensed reference backend, not a from-scratch inference engine or Baseten implementation.
+
+Apply to the clean pinned tree:
+
+```sh
+git -C vendor/llama.cpp apply ../../experiments/qwen-packed-prefill.patch
+```
+
+Build and retain a separate candidate server/library directory. For an isolated server experiment, retain the original reference dependencies and replace only the rebuilt server executable and `libllama-server-impl.so`. Use `--allow-backend-change` for comparisons. Restore sources with the same command plus `-R`, then restore the saved reference binaries/libraries. The patch is experimental and is not applied to the default submodule. See [measurements and limits](../results/2026-11-14-packed/README.md).

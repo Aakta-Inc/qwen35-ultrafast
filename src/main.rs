@@ -55,6 +55,9 @@ struct Args {
     /// Move the same sampler to the native backend; requires output-parity verification.
     #[arg(long)]
     backend_sampling: bool,
+    /// Add varied synthetic visual questions for output-parity checks, not general accuracy.
+    #[arg(long)]
+    quality_probes: bool,
 }
 
 struct Server(Child);
@@ -181,6 +184,40 @@ fn validate_response(response: &Value) -> Result<()> {
     Ok(())
 }
 
+fn quality_requests() -> Result<Vec<(String, Value)>> {
+    let mut cases = Vec::new();
+    for (name, images, prompt) in [
+        (
+            "color",
+            1,
+            "What color is the rectangle? Answer with one word.",
+        ),
+        (
+            "position",
+            1,
+            "Is the rectangle on the left or right side of the image? Answer LEFT or RIGHT.",
+        ),
+        ("absence", 1, "Is a blue circle visible? Answer YES or NO."),
+        (
+            "motion",
+            8,
+            "Across the numbered frames, does the rectangle move left or right? Answer LEFT or RIGHT.",
+        ),
+        (
+            "description",
+            1,
+            "Describe the shape, color, location and background in this image in one sentence.",
+        ),
+    ] {
+        let mut body = request(images)?;
+        let content = body["messages"][0]["content"].as_array_mut().unwrap();
+        content.last_mut().unwrap()["text"] = json!(prompt);
+        body["max_tokens"] = json!(64);
+        cases.push((format!("quality-{name}"), body));
+    }
+    Ok(cases)
+}
+
 fn video_request(bytes: &[u8]) -> Result<Value> {
     ensure!(!bytes.is_empty(), "video fixture is empty");
     let mut body = request(1)?;
@@ -286,7 +323,8 @@ fn run(args: Args) -> Result<()> {
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
         "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps,"backend_sampling":args.backend_sampling},
         "repeats":args.repeats,"warmups_per_case":1,"video_sha256":video.as_ref().map(|v| hash_bytes(v)),
-        "input":"synthetic 448x448 PNG image sequences; optional separately labeled native video", "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing"});
+        "input":"synthetic 448x448 PNG image sequences; optional separately labeled native video", "quality_probes":args.quality_probes,
+        "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing"});
     write_json(&args.out.join("metadata.json"), &metadata)?;
     let log = File::create(args.out.join("server.log"))?;
     let mut command = Command::new(&args.server);
@@ -352,6 +390,9 @@ fn run(args: Args) -> Result<()> {
     }
     if let Some(bytes) = video {
         cases.push(("native-video".to_string(), video_request(&bytes)?));
+    }
+    if args.quality_probes {
+        cases.extend(quality_requests()?);
     }
     for (case, request) in cases {
         let body = serde_json::to_vec(&request)?;

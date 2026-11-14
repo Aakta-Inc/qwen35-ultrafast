@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "case": "images-1",
+      "mean_decode_tokens_per_second": 103.38076033925434,
+      "mean_wall_ms": 124.403345,
+      "outputs": [
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 124.403345,
+      "p95_wall_ms": 125.06136289999999,
+      "request_sha256": "6870b798011955922d2f8d02889c21585c157ebd70de3ca69d9eca4a5cc80a4c",
+      "serial_requests_per_minute": 482.30214388527895
+    },
+    {
+      "case": "quality-color",
+      "mean_decode_tokens_per_second": 103.29511524324766,
+      "mean_wall_ms": 123.211814,
+      "outputs": [
+        "Red",
+        "Red"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 123.211814,
+      "p95_wall_ms": 123.2893571,
+      "request_sha256": "d6369975b74c353a131bf9a9325b400557268c4d4e57d708d92cb300b9bca492",
+      "serial_requests_per_minute": 486.96629042406596
+    },
+    {
+      "case": "quality-position",
+      "mean_decode_tokens_per_second": 103.36986729046474,
+      "mean_wall_ms": 123.6312775,
+      "outputs": [
+        "LEFT",
+        "LEFT"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 123.6312775,
+      "p95_wall_ms": 124.22649475,
+      "request_sha256": "f4fda4014dc67171355852316b1290d1d9904650a7d8d506a3823d0e57a1f052",
+      "serial_requests_per_minute": 485.31408243354923
+    },
+    {
+      "case": "quality-absence",
+      "mean_decode_tokens_per_second": 102.51630960873374,
+      "mean_wall_ms": 123.8387365,
+      "outputs": [
+        "NO",
+        "NO"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 123.8387365,
+      "p95_wall_ms": 124.07916565,
+      "request_sha256": "4af7ac5b6720c863ccc0971d8d5b2e2875efcc6cf1ca532b6cbae7902767f175",
+      "serial_requests_per_minute": 484.50106724078216
+    },
+    {
+      "case": "quality-motion",
+      "mean_decode_tokens_per_second": 101.20633837854254,
+      "mean_wall_ms": 671.386816,
+      "outputs": [
+        "LEFT",
+        "LEFT"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 671.386816,
+      "p95_wall_ms": 674.0610697,
+      "request_sha256": "347cdfec8fe70bc2cc8aa9f981d8d10ede133783848b7b1e6b7707c52d9ad77c",
+      "serial_requests_per_minute": 89.3672597824739
+    },
+    {
+      "case": "quality-description",
+      "mean_decode_tokens_per_second": 109.93108503358039,
+      "mean_wall_ms": 278.24932449999994,
+      "outputs": [
+        "A red square is located in the bottom-left corner of a plain, light gray background.",
+        "A red square is located in the bottom-left corner of a plain, light gray background."
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 278.24932449999994,
+      "p95_wall_ms": 279.01006885,
+      "request_sha256": "c2cfa94318093d49b77b9b90ad4c41ca879d5fb0159176e0c484d9e96797adea",
+      "serial_requests_per_minute": 215.63394666929375
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4326 MiB, 53 %, 580.178.04, 129.02 W, 64\n",
+  "label": "packed-quality-reference",
+  "quality": "synthetic smoke only; no real-world accuracy claim"
+}
