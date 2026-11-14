@@ -52,6 +52,9 @@ struct Args {
     /// Diagnostic-only CUPTI preload library. Instrumented runs are not performance results.
     #[arg(long)]
     profile_library: Option<PathBuf>,
+    /// Move the same sampler to the native backend; requires output-parity verification.
+    #[arg(long)]
+    backend_sampling: bool,
 }
 
 struct Server(Child);
@@ -281,7 +284,7 @@ fn run(args: Args) -> Result<()> {
         "host_load_before":host_load(),
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
-        "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps},
+        "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps,"backend_sampling":args.backend_sampling},
         "repeats":args.repeats,"warmups_per_case":1,"video_sha256":video.as_ref().map(|v| hash_bytes(v)),
         "input":"synthetic 448x448 PNG image sequences; optional separately labeled native video", "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing"});
     write_json(&args.out.join("metadata.json"), &metadata)?;
@@ -293,6 +296,10 @@ fn run(args: Args) -> Result<()> {
         .stderr(Stdio::from(log));
     // Do not let the caller's graph override silently invalidate the declared experiment.
     command.env_remove("GGML_CUDA_DISABLE_GRAPHS");
+    command.env_remove("LLAMA_ARG_BACKEND_SAMPLING");
+    if args.backend_sampling {
+        command.arg("--backend-sampling");
+    }
     if args.disable_graphs {
         command.env("GGML_CUDA_DISABLE_GRAPHS", "1");
     }

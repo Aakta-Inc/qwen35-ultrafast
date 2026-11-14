@@ -15,11 +15,19 @@ struct Args {
     /// Permit an explicitly patched backend; model, inputs and work must still match.
     #[arg(long)]
     allow_backend_change: bool,
+    /// Compare CPU and native-backend execution of the same sampler on the same binary.
+    #[arg(long, conflicts_with = "allow_backend_change")]
+    allow_sampling_change: bool,
 }
 fn read(dir: &Path, file: &str) -> Result<Value> {
     Ok(serde_json::from_slice(&fs::read(dir.join(file))?)?)
 }
-fn same_contract(a: &Value, b: &Value, allow_backend_change: bool) -> Result<()> {
+fn same_contract(
+    a: &Value,
+    b: &Value,
+    allow_backend_change: bool,
+    allow_sampling_change: bool,
+) -> Result<()> {
     ensure!(
         !a["profiling"].as_bool().unwrap_or(false) && !b["profiling"].as_bool().unwrap_or(false),
         "instrumented runs are not performance comparisons"
@@ -42,11 +50,23 @@ fn same_contract(a: &Value, b: &Value, allow_backend_change: bool) -> Result<()>
             "incompatible {key}"
         );
     }
-    if allow_backend_change {
+    let sampling = |meta: &Value| -> Result<bool> {
+        // Metadata written before this option existed always used CPU sampling.
+        match meta["settings"].get("backend_sampling") {
+            None => Ok(false),
+            Some(value) => value.as_bool().context("invalid backend_sampling setting"),
+        }
+    };
+    let (a_sampling, b_sampling) = (sampling(a)?, sampling(b)?);
+    ensure!(
+        allow_sampling_change || a_sampling == b_sampling,
+        "sampling backend differs"
+    );
+    if allow_backend_change || allow_sampling_change {
         for key in ["batch", "ubatch"] {
             ensure!(
                 !a["settings"][key].is_null() && a["settings"][key] == b["settings"][key],
-                "backend experiment also changed {key}"
+                "controlled experiment also changed {key}"
             );
         }
     }
@@ -83,10 +103,20 @@ fn samples(dir: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
     }
     Ok(result)
 }
-fn compare(a_dir: &Path, b_dir: &Path, allow_backend_change: bool) -> Result<Value> {
+fn compare(
+    a_dir: &Path,
+    b_dir: &Path,
+    allow_backend_change: bool,
+    allow_sampling_change: bool,
+) -> Result<Value> {
     let a_meta = read(a_dir, "metadata.json")?;
     let b_meta = read(b_dir, "metadata.json")?;
-    same_contract(&a_meta, &b_meta, allow_backend_change)?;
+    same_contract(
+        &a_meta,
+        &b_meta,
+        allow_backend_change,
+        allow_sampling_change,
+    )?;
     // Require completion markers: a partial run must never become a result.
     let a_summary = read(a_dir, "summary.json")?;
     let b_summary = read(b_dir, "summary.json")?;
@@ -136,7 +166,7 @@ fn compare(a_dir: &Path, b_dir: &Path, allow_backend_change: bool) -> Result<Val
         cases.push(json!({"case":count,"baseline_mean_ms":a_total/repeats as f64,"candidate_mean_ms":b_total/repeats as f64,"speedup":a_total/b_total,"sample_outputs_equal":outputs_equal,"synthetic_gate_passes":outputs_equal && a_total/b_total >= 1.15}));
     }
     Ok(
-        json!({"baseline":a_summary["label"],"candidate":b_summary["label"],"cases":cases,"allow_backend_change":allow_backend_change,"baseline_backend":{"server":a_meta["server_sha256"],"libraries":a_meta["backend_libraries"]},"candidate_backend":{"server":b_meta["server_sha256"],"libraries":b_meta["backend_libraries"]},"scope":"matched model, inputs and evaluated work; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"}),
+        json!({"baseline":a_summary["label"],"candidate":b_summary["label"],"cases":cases,"allow_backend_change":allow_backend_change,"allow_sampling_change":allow_sampling_change,"baseline_backend":{"server":a_meta["server_sha256"],"libraries":a_meta["backend_libraries"]},"candidate_backend":{"server":b_meta["server_sha256"],"libraries":b_meta["backend_libraries"]},"scope":"matched model, inputs and evaluated work; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"}),
     )
 }
 fn main() -> Result<()> {
@@ -146,7 +176,8 @@ fn main() -> Result<()> {
         serde_json::to_string_pretty(&compare(
             &args.baseline,
             &args.candidate,
-            args.allow_backend_change
+            args.allow_backend_change,
+            args.allow_sampling_change
         )?)?
     );
     Ok(())
@@ -159,21 +190,34 @@ mod tests {
         let a = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{"libllama.so":"d"},"media_tools":{},"model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"video_fps":4}});
         let mut b = a.clone();
         b["settings"]["ubatch"] = json!(1024);
-        assert!(same_contract(&a, &b, false).is_ok());
+        assert!(same_contract(&a, &b, false, false).is_ok());
         b["model_sha256"] = json!("different");
-        assert!(same_contract(&a, &b, false).is_err());
-        assert!(same_contract(&a, &b, true).is_err());
+        assert!(same_contract(&a, &b, false, false).is_err());
+        assert!(same_contract(&a, &b, true, false).is_err());
         b = a.clone();
         b["settings"]["graphs"] = json!(false);
-        assert!(same_contract(&a, &b, false).is_err());
+        assert!(same_contract(&a, &b, false, false).is_err());
         b = a.clone();
         b["backend_libraries"]["libllama.so"] = json!("changed");
-        assert!(same_contract(&a, &b, false).is_err());
+        assert!(same_contract(&a, &b, false, false).is_err());
         let mut a = a;
         a["settings"]["batch"] = json!(2048);
         b["settings"]["batch"] = json!(2048);
-        assert!(same_contract(&a, &b, true).is_ok());
+        assert!(same_contract(&a, &b, true, false).is_ok());
         b["profiling"] = json!(true);
-        assert!(same_contract(&a, &b, true).is_err());
+        assert!(same_contract(&a, &b, true, false).is_err());
+        b = a.clone();
+        b["settings"]["backend_sampling"] = json!(true);
+        assert!(same_contract(&a, &b, false, false).is_err());
+        assert!(same_contract(&a, &b, true, false).is_err());
+        assert!(same_contract(&a, &b, false, true).is_ok());
+        b["settings"]["backend_sampling"] = json!("invalid");
+        assert!(same_contract(&a, &b, false, true).is_err());
+        b["settings"]["backend_sampling"] = json!(true);
+        b["model_sha256"] = json!("different");
+        assert!(same_contract(&a, &b, false, true).is_err());
+        b["model_sha256"] = a["model_sha256"].clone();
+        b["backend_libraries"]["libllama.so"] = json!("changed");
+        assert!(same_contract(&a, &b, false, true).is_err());
     }
 }
