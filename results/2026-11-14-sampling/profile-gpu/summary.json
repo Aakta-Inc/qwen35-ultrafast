@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {
+      "case": "images-0",
+      "mean_decode_tokens_per_second": 108.17330911686264,
+      "mean_wall_ms": 1215.2021295,
+      "outputs": [
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of interconnected mechanical components. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental principles remain the same. Here is a detailed breakdown of how the key components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the rim to the hub), and the **hub** (the central part that holds the axle).\n\n",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of interconnected mechanical components. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental principles remain the same. Here is a detailed breakdown of how the key components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the rim to the hub), and the **hub** (the central part that holds the axle).\n\n"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1215.2021295,
+      "p95_wall_ms": 1215.92401275,
+      "request_sha256": "5f6b46f20a3419898f467bac9b029000d19f2b13b96e51f5fb36c4eee063442e",
+      "serial_requests_per_minute": 49.374502021887714
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4294 MiB, 40 %, 580.178.04, 139.55 W, 60\n",
+  "label": "sampling-profile-gpu",
+  "quality": "synthetic smoke only; no real-world accuracy claim"
+}

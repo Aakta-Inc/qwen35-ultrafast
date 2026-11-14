@@ -1,8 +1,8 @@
 # GPU kernel diagnostics
 
-`cupti_trace.cpp` is an original C++ preload library for Linux. It writes sorted, cumulative kernel-time snapshots from CUPTI. These include loading and warmup, can overlap in time, and omit the final unflushed records when the runner stops the server. **They are not request latency or performance comparisons.** Inspect `dropped_records` before interpreting a snapshot.
+`cupti_trace.cpp` is an original C++ preload library for Linux. It writes sorted, cumulative kernel and memory-transfer snapshots from CUPTI. These include loading and warmup, can overlap in time, and omit the final unflushed records when the runner stops the server. **They are not request latency or performance comparisons.** Inspect `dropped_records` before interpreting a snapshot. Rows named `memcpy_*` report transfer direction and bytes; their `calls` count denotes activity records. Kernel rows have zero in the `bytes` column.
 
-Tested on RTX 5060 / driver 580.178.04 with CUPTI **13.0.85** and CUDA 12.8 headers/runtime. CUPTI 12.8 failed activity flushing with `CUPTI_ERROR_INVALID_DEVICE` on this setup. Do not substitute its ABI: this source uses `CUpti_ActivityKernel10`.
+Tested on RTX 5060 / driver 580.178.04 with CUPTI **13.0.85** and CUDA 12.8 headers/runtime. CUPTI 12.8 failed activity flushing with `CUPTI_ERROR_INVALID_DEVICE` on this setup. Do not substitute its ABI: this source uses `CUpti_ActivityKernel10` and `CUpti_ActivityMemcpy6`.
 
 With toolkit locations supplied by your installation:
 

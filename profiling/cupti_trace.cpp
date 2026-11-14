@@ -17,7 +17,7 @@
 #include <cxxabi.h>
 
 namespace {
-struct Entry { unsigned long long count=0, ns=0; };
+struct Entry { unsigned long long count=0, ns=0, bytes=0; };
 struct State {
     std::mutex mutex;
     std::map<std::string, Entry> kernels;
@@ -52,6 +52,16 @@ void CUPTIAPI completed(CUcontext context,uint32_t stream,uint8_t *buffer,size_t
                 auto &entry=state().kernels[kernel->name];
                 ++entry.count; entry.ns+=kernel->end-kernel->start;
             }
+        } else if (record->kind==CUPTI_ACTIVITY_KIND_MEMCPY) {
+            const auto *copy=reinterpret_cast<const CUpti_ActivityMemcpy6 *>(record);
+            const char *name="memcpy_other";
+            if (copy->copyKind==CUPTI_ACTIVITY_MEMCPY_KIND_DTOH) name="memcpy_device_to_host";
+            if (copy->copyKind==CUPTI_ACTIVITY_MEMCPY_KIND_HTOD) name="memcpy_host_to_device";
+            if (copy->copyKind==CUPTI_ACTIVITY_MEMCPY_KIND_DTOD) name="memcpy_device_to_device";
+            std::lock_guard<std::mutex> guard(state().mutex);
+            auto &entry=state().kernels[name];
+            ++entry.count; entry.bytes+=copy->bytes;
+            if (copy->start && copy->end>=copy->start) entry.ns+=copy->end-copy->start;
         }
     }
     size_t dropped=0; check(cuptiActivityGetNumDroppedRecords(context,stream,&dropped));
@@ -65,14 +75,14 @@ void snapshot() {
     // Atomic publication: a killed server leaves its last complete snapshot.
     const std::string tmp=state().output+".tmp";
     std::ofstream out(tmp);
-    out << "# Partial cumulative kernel profile including loading/warmup; not request latency\n# dropped_records=" << state().dropped << "\nname,calls,total_ms\n";
+    out << "# Partial cumulative GPU activity including loading/warmup; not request latency\n# dropped_records=" << state().dropped << "\nname,calls,total_ms,bytes\n";
     for (const auto &[name,entry]:rows) {
         int status=0; char *demangled=abi::__cxa_demangle(name.c_str(),nullptr,nullptr,&status);
         std::string readable=status==0 ? demangled : name;
         std::free(demangled);
         std::string escaped;
         for (char c:readable) { if(c=='"') escaped+='"'; escaped+=c; }
-        out << '"' << escaped << "\"," << entry.count << ',' << entry.ns/1000000.0 << '\n';
+        out << '"' << escaped << "\"," << entry.count << ',' << entry.ns/1000000.0 << ',' << entry.bytes << '\n';
     }
     out.close();
     if (!out || std::rename(tmp.c_str(),state().output.c_str())!=0) std::_Exit(86);
@@ -90,6 +100,7 @@ __attribute__((constructor)) void initialize() {
     state().output=output;
     check(cuptiActivityRegisterCallbacks(requested,completed));
     check(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL));
+    check(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_MEMCPY));
     std::thread([] {
         while (true) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
