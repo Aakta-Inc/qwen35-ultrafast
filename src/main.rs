@@ -58,6 +58,9 @@ struct Args {
     /// Add varied synthetic visual questions for output-parity checks, not general accuracy.
     #[arg(long)]
     quality_probes: bool,
+    /// Use a hash-pinned local media manifest instead of the synthetic cases.
+    #[arg(long, conflicts_with_all = ["video", "quality_probes", "images"])]
+    corpus: Option<PathBuf>,
 }
 
 struct Server(Child);
@@ -218,6 +221,56 @@ fn quality_requests() -> Result<Vec<(String, Value)>> {
     Ok(cases)
 }
 
+fn corpus_requests(path: &Path) -> Result<(Value, Vec<(String, Value)>)> {
+    let manifest: Value = serde_json::from_slice(&fs::read(path)?)?;
+    let entries = manifest["cases"]
+        .as_array()
+        .context("corpus requires cases array")?;
+    ensure!(!entries.is_empty(), "corpus has no cases");
+    let mut names = std::collections::BTreeSet::new();
+    let mut cases = Vec::new();
+    for entry in entries {
+        let name = entry["name"].as_str().context("case requires name")?;
+        ensure!(
+            !name.is_empty() && names.insert(name),
+            "empty or duplicate case name"
+        );
+        let file = entry["file"].as_str().context("case requires file")?;
+        let bytes = fs::read(
+            path.parent()
+                .context("manifest directory missing")?
+                .join(file),
+        )
+        .with_context(|| format!("reading corpus media {file}"))?;
+        ensure!(
+            !bytes.is_empty() && entry["sha256"].as_str() == Some(&hash_bytes(&bytes)),
+            "media hash mismatch: {file}"
+        );
+        let prompt = entry["prompt"].as_str().context("case requires prompt")?;
+        let max_tokens = entry["max_tokens"]
+            .as_u64()
+            .context("case requires max_tokens")?;
+        ensure!(
+            !prompt.is_empty() && max_tokens > 0,
+            "empty prompt or zero token budget"
+        );
+        let media = match entry["mime"].as_str() {
+            Some(mime @ ("image/png" | "image/jpeg")) => {
+                json!({"type":"image_url","image_url":{"url":format!("data:{mime};base64,{}", STANDARD.encode(&bytes))}})
+            }
+            Some("video/mp4") => {
+                json!({"type":"input_video","input_video":{"data":STANDARD.encode(&bytes)}})
+            }
+            _ => bail!("unsupported media MIME type for {name}"),
+        };
+        let mut body = request(0)?;
+        body["messages"][0]["content"] = json!([media, {"type":"text","text":prompt}]);
+        body["max_tokens"] = json!(max_tokens);
+        cases.push((name.to_string(), body));
+    }
+    Ok((manifest, cases))
+}
+
 fn video_request(bytes: &[u8]) -> Result<Value> {
     ensure!(!bytes.is_empty(), "video fixture is empty");
     let mut body = request(1)?;
@@ -255,6 +308,7 @@ fn host_load() -> Value {
     }
 }
 fn run(args: Args) -> Result<()> {
+    let corpus = args.corpus.as_deref().map(corpus_requests).transpose()?;
     ensure!(args.video_fps > 0, "video FPS must be positive");
     ensure!(
         args.repeats >= 2,
@@ -315,7 +369,8 @@ fn run(args: Args) -> Result<()> {
     let video = args.video.as_ref().map(fs::read).transpose()?;
     let metadata = json!({"schema":2,"label":args.label,"backend":"llama.cpp", "server_sha256":hash_file(&args.server)?,
         "backend_libraries":backend_libraries(&args.server)?,
-        "media_tools":if args.video.is_some() { media_tools()? } else {json!({})},
+        "media_tools":if args.video.is_some() || corpus.as_ref().is_some_and(|(m, _)| m["cases"].as_array().unwrap().iter().any(|c| c["mime"] == "video/mp4")) { media_tools()? } else {json!({})},
+        "corpus":corpus.as_ref().map(|(m, _)| m),
         "profiling":args.profile_library.is_some(),
         "profiling_library_sha256":args.profile_library.as_deref().map(hash_file).transpose()?,
         "host_load_before":host_load(),
@@ -323,7 +378,7 @@ fn run(args: Args) -> Result<()> {
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
         "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps,"backend_sampling":args.backend_sampling},
         "repeats":args.repeats,"warmups_per_case":1,"video_sha256":video.as_ref().map(|v| hash_bytes(v)),
-        "input":"synthetic 448x448 PNG image sequences; optional separately labeled native video", "quality_probes":args.quality_probes,
+        "input":if corpus.is_some() { "hash-pinned media corpus" } else { "synthetic 448x448 PNG image sequences; optional separately labeled native video" }, "quality_probes":args.quality_probes,
         "timing":"warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing"});
     write_json(&args.out.join("metadata.json"), &metadata)?;
     let log = File::create(args.out.join("server.log"))?;
@@ -394,6 +449,9 @@ fn run(args: Args) -> Result<()> {
     if args.quality_probes {
         cases.extend(quality_requests()?);
     }
+    if let Some((_, corpus_cases)) = corpus {
+        cases = corpus_cases;
+    }
     for (case, request) in cases {
         let body = serde_json::to_vec(&request)?;
         let mut times = Vec::new();
@@ -428,7 +486,7 @@ fn run(args: Args) -> Result<()> {
     }
     write_json(
         &args.out.join("summary.json"),
-        &json!({"label":args.label,"cases":summaries,"quality":"synthetic smoke only; no real-world accuracy claim","gpu_after":gpu_snapshot()?}),
+        &json!({"label":args.label,"cases":summaries,"quality":"small fixture suite only; no general accuracy claim","gpu_after":gpu_snapshot()?}),
     )?;
     Ok(())
 }
@@ -439,6 +497,40 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn corpus_rejects_changed_media_before_inference() {
+        let dir = std::env::temp_dir().join(format!(
+            "qwen-corpus-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&dir).unwrap();
+        let bytes = image(0).unwrap();
+        fs::write(dir.join("image.png"), &bytes).unwrap();
+        let manifest = json!({"cases":[{"name":"check","file":"image.png","sha256":hash_bytes(&bytes),"mime":"image/png","prompt":"Which color?","max_tokens":8}]});
+        fs::write(
+            dir.join("corpus.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        let (_, cases) = corpus_requests(&dir.join("corpus.json")).unwrap();
+        assert_eq!(
+            cases[0].1["messages"][0]["content"][1]["text"],
+            "Which color?"
+        );
+        assert_eq!(cases[0].1["max_tokens"], 8);
+        fs::write(dir.join("image.png"), image(1).unwrap()).unwrap();
+        assert!(
+            corpus_requests(&dir.join("corpus.json"))
+                .unwrap_err()
+                .to_string()
+                .contains("media hash mismatch")
+        );
+        fs::remove_dir_all(dir).unwrap();
+    }
     #[test]
     fn rejects_cached_or_missing_measurements() {
         let valid = json!({"timings":{"cache_n":0,"prompt_n":20,"predicted_n":1},"choices":[{"message":{"content":"YES"}}]});

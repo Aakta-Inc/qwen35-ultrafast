@@ -5,3 +5,7 @@
 /runs/
 *.gguf
 .DS_Store
+/fixtures/real-media/*.png
+/fixtures/real-media/*.jpg
+/fixtures/real-media/*.avi
+/fixtures/real-media/*.mp4

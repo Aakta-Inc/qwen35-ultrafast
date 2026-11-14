@@ -1,0 +1,95 @@
+{
+  "source": "https://github.com/opencv/opencv/tree/59b6aad64b89f15247542d0f0418d4a7477a8f91/samples/data",
+  "cases": [
+    {
+      "name": "people-count",
+      "file": "basketball1.png",
+      "mime": "image/png",
+      "prompt": "How many people are visible? Answer with one number.",
+      "max_tokens": 8,
+      "expected": "2",
+      "sha256": "ba06f6701f7260998b430c39b6557f775497e6ce7b1a74f0b7ea6af371bf54a6"
+    },
+    {
+      "name": "people-setting",
+      "file": "basketball1.png",
+      "mime": "image/png",
+      "prompt": "Is this scene indoors or outdoors? Answer INDOORS or OUTDOORS.",
+      "max_tokens": 8,
+      "expected": "INDOORS",
+      "sha256": "ba06f6701f7260998b430c39b6557f775497e6ce7b1a74f0b7ea6af371bf54a6"
+    },
+    {
+      "name": "fruit-color",
+      "file": "fruits.jpg",
+      "mime": "image/jpeg",
+      "prompt": "What color is the large citrus wedge in the center? Answer with one color word.",
+      "max_tokens": 8,
+      "expected": "orange",
+      "sha256": "9c031d80a1c52da5eca790db896baffec6a7e52bf786cdb7bbfca5c7f880e6a1"
+    },
+    {
+      "name": "fruit-description",
+      "file": "fruits.jpg",
+      "mime": "image/jpeg",
+      "prompt": "Describe the visible foods in one sentence.",
+      "max_tokens": 64,
+      "review": "caption",
+      "sha256": "9c031d80a1c52da5eca790db896baffec6a7e52bf786cdb7bbfca5c7f880e6a1"
+    },
+    {
+      "name": "building-setting",
+      "file": "building.jpg",
+      "mime": "image/jpeg",
+      "prompt": "Is the camera inside or outside the building? Answer INSIDE or OUTSIDE.",
+      "max_tokens": 8,
+      "expected": "OUTSIDE",
+      "sha256": "742a1baad62ac82e91e718e77eedf7e85c2eddc4badfb8c87c6cbc86c45a8b07"
+    },
+    {
+      "name": "sudoku-heading",
+      "file": "sudoku.png",
+      "mime": "image/png",
+      "prompt": "What is the name of the puzzle printed in the heading? Answer with only that word.",
+      "max_tokens": 8,
+      "expected": "SUDOKU",
+      "sha256": "3cd9ab173f7178c0a16bba9f867062b58b5d60918d5aeb8ced85cba0b24c353a"
+    },
+    {
+      "name": "sudoku-first-number",
+      "file": "sudoku.png",
+      "mime": "image/png",
+      "prompt": "Reading left to right, what is the first printed digit in the top row of the Sudoku grid? Answer with one digit.",
+      "max_tokens": 8,
+      "expected": "6",
+      "sha256": "3cd9ab173f7178c0a16bba9f867062b58b5d60918d5aeb8ced85cba0b24c353a"
+    },
+    {
+      "name": "pedestrians-start",
+      "file": "pedestrians-start.mp4",
+      "mime": "video/mp4",
+      "prompt": "Are people walking outdoors in this video? Answer YES or NO.",
+      "max_tokens": 8,
+      "expected": "YES",
+      "sha256": "e376ce54189ca08156960037a12d859a7c23eda24a928cb71611205772beadd8"
+    },
+    {
+      "name": "pedestrians-later",
+      "file": "pedestrians-later.mp4",
+      "mime": "video/mp4",
+      "prompt": "Describe what the people are doing and the setting in one sentence.",
+      "max_tokens": 64,
+      "review": "caption",
+      "sha256": "5bcb1c8778bbaec60d218fea86621f012d093a991e6a301353c4458fa0c11d09"
+    },
+    {
+      "name": "tree-video",
+      "file": "tree.mp4",
+      "mime": "video/mp4",
+      "prompt": "Does this video show green leaves on a tree? Answer YES or NO.",
+      "max_tokens": 8,
+      "expected": "YES",
+      "sha256": "c9c4f86ac832d5025ab0eb885f3ebdb68a73aea0603380517d2ec45ceafaa89e"
+    }
+  ]
+}

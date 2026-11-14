@@ -18,6 +18,12 @@ struct Args {
     /// Compare CPU and native-backend execution of the same sampler on the same binary.
     #[arg(long, conflicts_with = "allow_backend_change")]
     allow_sampling_change: bool,
+    /// Report answer differences even when generated lengths differ; do not claim speedups.
+    #[arg(long)]
+    quality_only: bool,
+    /// Explicit case subset; all requested cases must exist in both complete runs.
+    #[arg(long = "cases", value_delimiter = ',')]
+    selected_cases: Vec<String>,
 }
 fn read(dir: &Path, file: &str) -> Result<Value> {
     Ok(serde_json::from_slice(&fs::read(dir.join(file))?)?)
@@ -88,6 +94,7 @@ fn same_contract(
         a["video_sha256"] == b["video_sha256"],
         "video fixtures differ"
     );
+    ensure!(a["corpus"] == b["corpus"], "media corpora differ");
     Ok(())
 }
 fn samples(dir: &Path) -> Result<BTreeMap<String, Vec<Value>>> {
@@ -108,6 +115,8 @@ fn compare(
     b_dir: &Path,
     allow_backend_change: bool,
     allow_sampling_change: bool,
+    quality_only: bool,
+    selected_cases: &[String],
 ) -> Result<Value> {
     let a_meta = read(a_dir, "metadata.json")?;
     let b_meta = read(b_dir, "metadata.json")?;
@@ -126,6 +135,10 @@ fn compare(
         a.keys().eq(b.keys()) && !a.is_empty(),
         "workload sets differ or are empty"
     );
+    ensure!(
+        selected_cases.iter().all(|name| a.contains_key(name)),
+        "selected case missing"
+    );
     let mut cases = Vec::new();
     for (count, left) in &a {
         let right = &b[count];
@@ -134,7 +147,11 @@ fn compare(
             left.len() == repeats && right.len() == repeats,
             "incomplete sample count"
         );
+        if !selected_cases.is_empty() && !selected_cases.contains(count) {
+            continue;
+        }
         let mut outputs_equal = true;
+        let mut generated_work_equal = true;
         let mut a_total = 0.;
         let mut b_total = 0.;
         for (x, y) in left.iter().zip(right) {
@@ -146,9 +163,14 @@ fn compare(
                 ensure!(z["response"]["timings"]["cache_n"] == 0, "cached prompt");
             }
             for key in ["prompt_n", "predicted_n"] {
+                let same = x["response"]["timings"][key] == y["response"]["timings"][key];
+                if key == "predicted_n" {
+                    generated_work_equal &= same;
+                }
                 ensure!(
                     x["response"]["timings"][key].as_u64().unwrap_or(0) > 0
-                        && x["response"]["timings"][key] == y["response"]["timings"][key],
+                        && y["response"]["timings"][key].as_u64().unwrap_or(0) > 0
+                        && (same || (quality_only && key == "predicted_n")),
                     "different evaluated work: {key}"
                 );
             }
@@ -163,10 +185,29 @@ fn compare(
             a_total += at;
             b_total += bt;
         }
-        cases.push(json!({"case":count,"baseline_mean_ms":a_total/repeats as f64,"candidate_mean_ms":b_total/repeats as f64,"speedup":a_total/b_total,"sample_outputs_equal":outputs_equal,"synthetic_gate_passes":outputs_equal && a_total/b_total >= 1.15}));
+        let mut result = json!({"case":count,"sample_outputs_equal":outputs_equal,"generated_work_equal":generated_work_equal});
+        if quality_only {
+            result["baseline_outputs"] = json!(
+                left.iter()
+                    .map(|v| &v["response"]["choices"][0]["message"]["content"])
+                    .collect::<Vec<_>>()
+            );
+            result["candidate_outputs"] = json!(
+                right
+                    .iter()
+                    .map(|v| &v["response"]["choices"][0]["message"]["content"])
+                    .collect::<Vec<_>>()
+            );
+        } else {
+            result["baseline_mean_ms"] = json!(a_total / repeats as f64);
+            result["candidate_mean_ms"] = json!(b_total / repeats as f64);
+            result["speedup"] = json!(a_total / b_total);
+            result["synthetic_gate_passes"] = json!(outputs_equal && a_total / b_total >= 1.15);
+        }
+        cases.push(result);
     }
     Ok(
-        json!({"baseline":a_summary["label"],"candidate":b_summary["label"],"cases":cases,"allow_backend_change":allow_backend_change,"allow_sampling_change":allow_sampling_change,"baseline_backend":{"server":a_meta["server_sha256"],"libraries":a_meta["backend_libraries"]},"candidate_backend":{"server":b_meta["server_sha256"],"libraries":b_meta["backend_libraries"]},"scope":"matched model, inputs and evaluated work; synthetic output agreement is not general quality parity; inspect hardware and thermal conditions separately"}),
+        json!({"baseline":a_summary["label"],"candidate":b_summary["label"],"cases":cases,"selected_cases":selected_cases,"quality_only":quality_only,"allow_backend_change":allow_backend_change,"allow_sampling_change":allow_sampling_change,"baseline_backend":{"server":a_meta["server_sha256"],"libraries":a_meta["backend_libraries"]},"candidate_backend":{"server":b_meta["server_sha256"],"libraries":b_meta["backend_libraries"]},"scope":if quality_only {"matched model, inputs and prompt work; generated lengths may differ; no speed claims"} else {"matched model, inputs and evaluated work for selected cases; output agreement is not general quality parity; inspect hardware and thermal conditions separately"}}),
     )
 }
 fn main() -> Result<()> {
@@ -177,7 +218,9 @@ fn main() -> Result<()> {
             &args.baseline,
             &args.candidate,
             args.allow_backend_change,
-            args.allow_sampling_change
+            args.allow_sampling_change,
+            args.quality_only,
+            &args.selected_cases
         )?)?
     );
     Ok(())
@@ -185,6 +228,64 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn differing_answers_are_diagnostic_not_a_speedup() {
+        let root = std::env::temp_dir().join(format!(
+            "qwen-compare-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let meta = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{},"media_tools":{},"model_sha256":"b","mmproj_sha256":"c","repeats":1,"input":"fixture","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"batch":2048,"video_fps":4}});
+        for (name, answer, tokens) in [
+            ("left", "Two people", 3),
+            ("right", "There are two people", 5),
+        ] {
+            let dir = root.join(name);
+            fs::create_dir_all(&dir).unwrap();
+            fs::write(dir.join("metadata.json"), meta.to_string()).unwrap();
+            fs::write(dir.join("summary.json"), json!({"label":name}).to_string()).unwrap();
+            let sample = json!({"case":"people","warmup":false,"request_sha256":"same","wall_ms":100.,"response":{"timings":{"cache_n":0,"prompt_n":100,"predicted_n":tokens},"choices":[{"message":{"content":answer}}]}});
+            fs::write(dir.join("samples.jsonl"), format!("{sample}\n")).unwrap();
+        }
+        assert!(
+            compare(
+                &root.join("left"),
+                &root.join("right"),
+                false,
+                false,
+                false,
+                &[]
+            )
+            .is_err()
+        );
+        let diagnostic = compare(
+            &root.join("left"),
+            &root.join("right"),
+            false,
+            false,
+            true,
+            &[],
+        )
+        .unwrap();
+        assert_eq!(diagnostic["cases"][0]["sample_outputs_equal"], false);
+        assert_eq!(diagnostic["cases"][0]["generated_work_equal"], false);
+        assert!(diagnostic["cases"][0].get("speedup").is_none());
+        assert!(
+            compare(
+                &root.join("left"),
+                &root.join("right"),
+                false,
+                false,
+                true,
+                &["missing".into()]
+            )
+            .is_err()
+        );
+        fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn rejects_model_and_graph_policy_changes() {
         let a = json!({"schema":2,"backend":"llama.cpp","server_sha256":"a","backend_libraries":{"libllama.so":"d"},"media_tools":{},"model_sha256":"b","mmproj_sha256":"c","repeats":5,"input":"synthetic","settings":{"context":1024,"threads":6,"graphs":true,"flash_attention":true,"cache_prompt":false,"parallel":1,"ubatch":512,"video_fps":4}});
