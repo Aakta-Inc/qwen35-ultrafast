@@ -1,0 +1,164 @@
+{
+  "backend": "llama.cpp",
+  "backend_libraries": {
+    "libggml-base.so": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+    "libggml-base.so.1": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+    "libggml-base.so.1.0.0": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+    "libggml-cpu.so": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+    "libggml-cpu.so.1": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+    "libggml-cpu.so.1.0.0": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+    "libggml-cuda.so": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+    "libggml-cuda.so.1": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+    "libggml-cuda.so.1.0.0": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+    "libggml.so": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+    "libggml.so.1": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+    "libggml.so.1.0.0": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+    "libllama-common.so": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+    "libllama-common.so.1": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+    "libllama-common.so.1.0.0": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+    "libllama-server-impl.so": "58c966c5a2d6ae7909e74fe87b5701dc302857ce9b5752eef75cc80d392eda08",
+    "libllama.so": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+    "libllama.so.1": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+    "libllama.so.1.0.0": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+    "libmtmd.so": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+    "libmtmd.so.1": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+    "libmtmd.so.1.0.0": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827"
+  },
+  "corpus": {
+    "cases": [
+      {
+        "expected": "2",
+        "file": "basketball1.png",
+        "max_tokens": 8,
+        "mime": "image/png",
+        "name": "people-count",
+        "prompt": "How many people are visible? Answer with one number.",
+        "sha256": "ba06f6701f7260998b430c39b6557f775497e6ce7b1a74f0b7ea6af371bf54a6"
+      },
+      {
+        "expected": "INDOORS",
+        "file": "basketball1.png",
+        "max_tokens": 8,
+        "mime": "image/png",
+        "name": "people-setting",
+        "prompt": "Is this scene indoors or outdoors? Answer INDOORS or OUTDOORS.",
+        "sha256": "ba06f6701f7260998b430c39b6557f775497e6ce7b1a74f0b7ea6af371bf54a6"
+      },
+      {
+        "expected": "orange",
+        "file": "fruits.jpg",
+        "max_tokens": 8,
+        "mime": "image/jpeg",
+        "name": "fruit-color",
+        "prompt": "What color is the large citrus wedge in the center? Answer with one color word.",
+        "sha256": "9c031d80a1c52da5eca790db896baffec6a7e52bf786cdb7bbfca5c7f880e6a1"
+      },
+      {
+        "file": "fruits.jpg",
+        "max_tokens": 64,
+        "mime": "image/jpeg",
+        "name": "fruit-description",
+        "prompt": "Describe the visible foods in one sentence.",
+        "review": "caption",
+        "sha256": "9c031d80a1c52da5eca790db896baffec6a7e52bf786cdb7bbfca5c7f880e6a1"
+      },
+      {
+        "expected": "OUTSIDE",
+        "file": "building.jpg",
+        "max_tokens": 8,
+        "mime": "image/jpeg",
+        "name": "building-setting",
+        "prompt": "Is the camera inside or outside the building? Answer INSIDE or OUTSIDE.",
+        "sha256": "742a1baad62ac82e91e718e77eedf7e85c2eddc4badfb8c87c6cbc86c45a8b07"
+      },
+      {
+        "expected": "SUDOKU",
+        "file": "sudoku.png",
+        "max_tokens": 8,
+        "mime": "image/png",
+        "name": "sudoku-heading",
+        "prompt": "What is the name of the puzzle printed in the heading? Answer with only that word.",
+        "sha256": "3cd9ab173f7178c0a16bba9f867062b58b5d60918d5aeb8ced85cba0b24c353a"
+      },
+      {
+        "expected": "6",
+        "file": "sudoku.png",
+        "max_tokens": 8,
+        "mime": "image/png",
+        "name": "sudoku-first-number",
+        "prompt": "Reading left to right, what is the first printed digit in the top row of the Sudoku grid? Answer with one digit.",
+        "sha256": "3cd9ab173f7178c0a16bba9f867062b58b5d60918d5aeb8ced85cba0b24c353a"
+      },
+      {
+        "expected": "YES",
+        "file": "pedestrians-start.mp4",
+        "max_tokens": 8,
+        "mime": "video/mp4",
+        "name": "pedestrians-start",
+        "prompt": "Are people walking outdoors in this video? Answer YES or NO.",
+        "sha256": "e376ce54189ca08156960037a12d859a7c23eda24a928cb71611205772beadd8"
+      },
+      {
+        "file": "pedestrians-later.mp4",
+        "max_tokens": 64,
+        "mime": "video/mp4",
+        "name": "pedestrians-later",
+        "prompt": "Describe what the people are doing and the setting in one sentence.",
+        "review": "caption",
+        "sha256": "5bcb1c8778bbaec60d218fea86621f012d093a991e6a301353c4458fa0c11d09"
+      },
+      {
+        "expected": "YES",
+        "file": "tree.mp4",
+        "max_tokens": 8,
+        "mime": "video/mp4",
+        "name": "tree-video",
+        "prompt": "Does this video show green leaves on a tree? Answer YES or NO.",
+        "sha256": "c9c4f86ac832d5025ab0eb885f3ebdb68a73aea0603380517d2ec45ceafaa89e"
+      }
+    ],
+    "source": "https://github.com/opencv/opencv/tree/59b6aad64b89f15247542d0f0418d4a7477a8f91/samples/data"
+  },
+  "gpu_before": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 10 MiB, 0 %, 580.178.04, 6.95 W, 41\n",
+  "host_load_before": {
+    "linux_loadavg": "0.58 0.58 0.36 1/297 355745",
+    "logical_cpus": 12
+  },
+  "input": "hash-pinned media corpus",
+  "label": "real-reference-g",
+  "media_tools": {
+    "ffmpeg": {
+      "sha256": "e7e7fb30477f717e6f55f9180a70386c62677ef8a4d4d1a5d948f4098aa3eb99",
+      "version": "ffmpeg version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2024 the FFmpeg developers"
+    },
+    "ffprobe": {
+      "sha256": "4f231a1960d83e403d08f7971e271707bec278a9ae18e21b8b5b03186668450d",
+      "version": "ffprobe version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2007-2024 the FFmpeg developers"
+    }
+  },
+  "mmproj_sha256": "cd88edcf8d031894960bb0c9c5b9b7e1fea6ebee02b9f7ce925a00d12891f864",
+  "model_sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+  "profiling": false,
+  "profiling_library_sha256": null,
+  "quality_probes": false,
+  "repeats": 3,
+  "schema": 2,
+  "server_sha256": "9e15612c70d278cf0033a6eac6ccab47d6532d040283ebed6bea192053ae32b3",
+  "server_version_stderr": "version: 1.0.0-dev (build 1, commit 9d925e7)\nbuilt with GNU 11.4.0 for Linux x86_64\n",
+  "server_version_stdout": "",
+  "settings": {
+    "backend_sampling": false,
+    "batch": 2048,
+    "cache_prompt": false,
+    "context": 16384,
+    "flash_attention": true,
+    "graphs": true,
+    "parallel": 1,
+    "threads": 6,
+    "ubatch": 512,
+    "video_fps": 4
+  },
+  "timing": "warm HTTP request wall time; excludes client fixture encoding, process startup, model loading; includes server media processing",
+  "video_sha256": null,
+  "warmups_per_case": 1
+}

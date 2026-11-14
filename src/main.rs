@@ -440,17 +440,18 @@ fn run(args: Args) -> Result<()> {
         .open(args.out.join("samples.jsonl"))?;
     let mut summaries = Vec::new();
     let mut cases = Vec::new();
-    for count in &args.images {
-        cases.push((format!("images-{count}"), request(*count)?));
-    }
-    if let Some(bytes) = video {
-        cases.push(("native-video".to_string(), video_request(&bytes)?));
-    }
-    if args.quality_probes {
-        cases.extend(quality_requests()?);
-    }
     if let Some((_, corpus_cases)) = corpus {
         cases = corpus_cases;
+    } else {
+        for count in &args.images {
+            cases.push((format!("images-{count}"), request(*count)?));
+        }
+        if let Some(bytes) = video {
+            cases.push(("native-video".to_string(), video_request(&bytes)?));
+        }
+        if args.quality_probes {
+            cases.extend(quality_requests()?);
+        }
     }
     for (case, request) in cases {
         let body = serde_json::to_vec(&request)?;

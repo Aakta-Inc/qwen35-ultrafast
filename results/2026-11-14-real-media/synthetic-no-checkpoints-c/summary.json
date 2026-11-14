@@ -1,0 +1,92 @@
+{
+  "cases": [
+    {
+      "case": "images-0",
+      "mean_decode_tokens_per_second": 109.96994832499726,
+      "mean_wall_ms": 1172.4092323999998,
+      "outputs": [
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of mechanical linkages. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental mechanics remain consistent. Here is a detailed breakdown of how the core components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the hub to the rim), and a **tire** (the rubber layer providing traction).\n\n*   **",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of mechanical linkages. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental mechanics remain consistent. Here is a detailed breakdown of how the core components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the hub to the rim), and a **tire** (the rubber layer providing traction).\n\n*   **",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of mechanical linkages. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental mechanics remain consistent. Here is a detailed breakdown of how the core components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the hub to the rim), and a **tire** (the rubber layer providing traction).\n\n*   **",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of mechanical linkages. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental mechanics remain consistent. Here is a detailed breakdown of how the core components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the hub to the rim), and a **tire** (the rubber layer providing traction).\n\n*   **",
+        "A bicycle is a marvel of simple engineering, converting human pedaling power into forward motion through a system of mechanical linkages. While the design varies slightly between road bikes, mountain bikes, and hybrids, the fundamental mechanics remain consistent. Here is a detailed breakdown of how the core components work together.\n\n### 1. The Wheels: The Foundation of Motion\nThe wheels are the primary interface between the bicycle and the ground. They consist of a **rim** (the outer circle), **spokes** (thin metal rods connecting the hub to the rim), and a **tire** (the rubber layer providing traction).\n\n*   **"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1171.36916,
+      "p95_wall_ms": 1177.1781798,
+      "request_sha256": "5f6b46f20a3419898f467bac9b029000d19f2b13b96e51f5fb36c4eee063442e",
+      "serial_requests_per_minute": 51.17666966608238
+    },
+    {
+      "case": "images-1",
+      "mean_decode_tokens_per_second": 100.79433272683063,
+      "mean_wall_ms": 88.402106,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 87.96227900000001,
+      "p95_wall_ms": 89.86193560000001,
+      "request_sha256": "6870b798011955922d2f8d02889c21585c157ebd70de3ca69d9eca4a5cc80a4c",
+      "serial_requests_per_minute": 678.7168622430783
+    },
+    {
+      "case": "images-8",
+      "mean_decode_tokens_per_second": 97.9874271662762,
+      "mean_wall_ms": 545.0652146,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 545.15625,
+      "p95_wall_ms": 548.770298,
+      "request_sha256": "608aab81abcfa262e19add8c2f5c844d28d1c348e94155e00a90485268544e32",
+      "serial_requests_per_minute": 110.07857113764163
+    },
+    {
+      "case": "images-48",
+      "mean_decode_tokens_per_second": 91.14942627918745,
+      "mean_wall_ms": 3351.3740090000006,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 3337.451357,
+      "p95_wall_ms": 3396.5673482,
+      "request_sha256": "c09ab5a89155454088ccbf798b89698365c3269a10c1414574df5a9ec4cb56d2",
+      "serial_requests_per_minute": 17.903104768036048
+    },
+    {
+      "case": "native-video",
+      "mean_decode_tokens_per_second": 98.06931067486897,
+      "mean_wall_ms": 839.4259548,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 837.4113749999999,
+      "p95_wall_ms": 848.124642,
+      "request_sha256": "8f64be1a60c722b92a0b0deb7f0e73a5b2993a731149f2a490b286eff96c49ac",
+      "serial_requests_per_minute": 71.47741817715833
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4334 MiB, 67 %, 580.178.04, 135.18 W, 63\n",
+  "label": "synthetic-no-checkpoints-c",
+  "quality": "small fixture suite only; no general accuracy claim"
+}

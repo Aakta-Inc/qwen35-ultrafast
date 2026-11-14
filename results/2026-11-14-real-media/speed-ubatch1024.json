@@ -1,0 +1,146 @@
+{
+  "allow_backend_change": false,
+  "allow_sampling_change": false,
+  "baseline": "real-no-checkpoints-b",
+  "baseline_backend": {
+    "libraries": {
+      "libggml-base.so": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1.0.0": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-cpu.so": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1.0.0": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cuda.so": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1.0.0": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml.so": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1.0.0": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libllama-common.so": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1.0.0": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-server-impl.so": "a0485c48114f4046e5d91b97b37a064d5ad57e265030755075056baf1c84dc32",
+      "libllama.so": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1.0.0": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libmtmd.so": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1.0.0": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827"
+    },
+    "server": "9e15612c70d278cf0033a6eac6ccab47d6532d040283ebed6bea192053ae32b3"
+  },
+  "candidate": "real-ubatch1024-c",
+  "candidate_backend": {
+    "libraries": {
+      "libggml-base.so": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-base.so.1.0.0": "7bcdafe29a3a8b6dcb598744cb7a9e6c6e41d141be0657f62b0bbfa147ad8dcc",
+      "libggml-cpu.so": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cpu.so.1.0.0": "be2c72095ab2081fed4300d14efa3f9837504a1b17388594a0388567df883db2",
+      "libggml-cuda.so": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml-cuda.so.1.0.0": "33f4b0048d15ae38ba02290e6122c2078b4573cfbeb7bb1c1e87c91bc65b6e97",
+      "libggml.so": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libggml.so.1.0.0": "33ea64d7bcd7db886c6cf7aa935b6f86d36664630b782b3676fc076f89ec48b3",
+      "libllama-common.so": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-common.so.1.0.0": "b8e26fdc33025e15dab6ba12b9a65549812341c8171a9566be7613fc54ee571f",
+      "libllama-server-impl.so": "a0485c48114f4046e5d91b97b37a064d5ad57e265030755075056baf1c84dc32",
+      "libllama.so": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libllama.so.1.0.0": "9d966c4385d4ea11a6db1b93917f66c574c3a1907d4bb668fb85777c43803841",
+      "libmtmd.so": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827",
+      "libmtmd.so.1.0.0": "f0eae45aa0c2ad5a27d9b0de4ee27d981c10b376f0cea58449bd73a0611bb827"
+    },
+    "server": "9e15612c70d278cf0033a6eac6ccab47d6532d040283ebed6bea192053ae32b3"
+  },
+  "cases": [
+    {
+      "baseline_mean_ms": 232.02897,
+      "candidate_mean_ms": 229.19042566666667,
+      "case": "building-setting",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0123850912405115,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 106.69827,
+      "candidate_mean_ms": 106.30265733333333,
+      "case": "fruit-color",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0037215689296097,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 1366.5868736666669,
+      "candidate_mean_ms": 1366.559768,
+      "case": "pedestrians-start",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0000198349660963,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 130.186232,
+      "candidate_mean_ms": 127.99207166666666,
+      "case": "people-count",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0171429394396214,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 146.42968133333332,
+      "candidate_mean_ms": 146.2510616666667,
+      "case": "people-setting",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0012213221882365,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 145.78104933333336,
+      "candidate_mean_ms": 144.802442,
+      "case": "sudoku-first-number",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.006758223962365,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 155.17816,
+      "candidate_mean_ms": 154.7426853333333,
+      "case": "sudoku-heading",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0028141857932,
+      "synthetic_gate_passes": false
+    },
+    {
+      "baseline_mean_ms": 122.36867166666666,
+      "candidate_mean_ms": 119.38231999999999,
+      "case": "tree-video",
+      "generated_work_equal": true,
+      "sample_outputs_equal": true,
+      "speedup": 1.0250150245586336,
+      "synthetic_gate_passes": false
+    }
+  ],
+  "quality_only": false,
+  "scope": "matched model, inputs and evaluated work for selected cases; output agreement is not general quality parity; inspect hardware and thermal conditions separately",
+  "selected_cases": [
+    "people-count",
+    "people-setting",
+    "fruit-color",
+    "building-setting",
+    "sudoku-heading",
+    "sudoku-first-number",
+    "pedestrians-start",
+    "tree-video"
+  ]
+}

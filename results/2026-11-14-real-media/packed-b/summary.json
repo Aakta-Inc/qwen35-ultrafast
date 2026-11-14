@@ -1,0 +1,157 @@
+{
+  "cases": [
+    {
+      "case": "people-count",
+      "mean_decode_tokens_per_second": 102.9831203636402,
+      "mean_wall_ms": 150.1931993333333,
+      "outputs": [
+        "2",
+        "2",
+        "2"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 151.47501699999998,
+      "p95_wall_ms": 154.74329049999997,
+      "request_sha256": "8bf36ed462d3da5fe7f9897b39ac28b449867524571652c56535dbb0c1fb51dd",
+      "serial_requests_per_minute": 399.48546449721863
+    },
+    {
+      "case": "people-setting",
+      "mean_decode_tokens_per_second": 106.61753838267926,
+      "mean_wall_ms": 168.46172166666668,
+      "outputs": [
+        "INDOORS",
+        "INDOORS",
+        "INDOORS"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 168.918976,
+      "p95_wall_ms": 169.15879629999998,
+      "request_sha256": "919c90d95df317604bfe6d8d0934c17f250a92142da8a694efab1daf2a416885",
+      "serial_requests_per_minute": 356.1639962265216
+    },
+    {
+      "case": "fruit-color",
+      "mean_decode_tokens_per_second": 102.83486691598837,
+      "mean_wall_ms": 128.17367433333334,
+      "outputs": [
+        "orange",
+        "orange",
+        "orange"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 127.511796,
+      "p95_wall_ms": 129.5051007,
+      "request_sha256": "0ac5a7b46fa51f80fac063759483f4498f5c412841d83ecd9e30bf0a6b709c8a",
+      "serial_requests_per_minute": 468.1148473902817
+    },
+    {
+      "case": "fruit-description",
+      "mean_decode_tokens_per_second": 109.81225237079792,
+      "mean_wall_ms": 372.03454400000004,
+      "outputs": [
+        "A vibrant assortment of fresh fruits including a sliced orange, kiwi, lemon, lime, and mango, alongside a head of red cabbage.",
+        "A vibrant assortment of fresh fruits including a sliced orange, kiwi, lemon, lime, and mango, alongside a head of red cabbage.",
+        "A vibrant assortment of fresh fruits including a sliced orange, kiwi, lemon, lime, and mango, alongside a head of red cabbage."
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 372.51362700000004,
+      "p95_wall_ms": 372.9591873,
+      "request_sha256": "4d9dd777270260afd40ee8e87959e92e938b6e5cfb85280de12cdf9910077fc6",
+      "serial_requests_per_minute": 161.27534651728467
+    },
+    {
+      "case": "building-setting",
+      "mean_decode_tokens_per_second": 104.05914860828597,
+      "mean_wall_ms": 254.95326533333335,
+      "outputs": [
+        "OUTSIDE",
+        "OUTSIDE",
+        "OUTSIDE"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 252.720958,
+      "p95_wall_ms": 258.91914190000006,
+      "request_sha256": "18bc382c8c0a43b5ccdf1d2a9fb81c25827761c198449f2ee3e9d429760a8c2e",
+      "serial_requests_per_minute": 235.33724865831488
+    },
+    {
+      "case": "sudoku-heading",
+      "mean_decode_tokens_per_second": 104.69930805761511,
+      "mean_wall_ms": 173.29220166666667,
+      "outputs": [
+        "Sudoku",
+        "Sudoku",
+        "Sudoku"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 173.649822,
+      "p95_wall_ms": 174.2267364,
+      "request_sha256": "dad76341402e08f1eddd2e817249751d49471bd39e4d4f1022e24f11d5e6c962",
+      "serial_requests_per_minute": 346.2360072925382
+    },
+    {
+      "case": "sudoku-first-number",
+      "mean_decode_tokens_per_second": 102.65887324642647,
+      "mean_wall_ms": 169.32167233333334,
+      "outputs": [
+        "6",
+        "6",
+        "6"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 169.520061,
+      "p95_wall_ms": 169.8311172,
+      "request_sha256": "12c0c3be8d1c9c91eaeeb87f1cbce0c9ce0658cdb5ecceeebd0923ed9f883a33",
+      "serial_requests_per_minute": 354.3551110331679
+    },
+    {
+      "case": "pedestrians-start",
+      "mean_decode_tokens_per_second": 99.89046159213164,
+      "mean_wall_ms": 1401.369563,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1384.6453809999998,
+      "p95_wall_ms": 1436.1881173,
+      "request_sha256": "cf0c02ef4d9e7dc750d00fde8f9c09f7c54bcc6e812a7b9a2177d5351ef75d45",
+      "serial_requests_per_minute": 42.815258433010506
+    },
+    {
+      "case": "pedestrians-later",
+      "mean_decode_tokens_per_second": 106.08203993817413,
+      "mean_wall_ms": 1518.793509,
+      "outputs": [
+        "A group of people are walking on a sidewalk in front of a brick building.",
+        "A group of people are walking on a sidewalk in front of a brick building.",
+        "A group of people are walking on a sidewalk in front of a brick building."
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 1527.59881,
+      "p95_wall_ms": 1528.2199333,
+      "request_sha256": "1dac97f7aab25f053c249d3f2b925cddae61a7e5aebd6f7bf8b71e41d78713dd",
+      "serial_requests_per_minute": 39.50504110299038
+    },
+    {
+      "case": "tree-video",
+      "mean_decode_tokens_per_second": 102.8101441756977,
+      "mean_wall_ms": 143.15250333333333,
+      "outputs": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "outputs_identical": true,
+      "p50_wall_ms": 143.876442,
+      "p95_wall_ms": 146.93464740000002,
+      "request_sha256": "f73aaed1bfccec276897501f6a95629e88f457597ee0fec4b47cb34364b33293",
+      "serial_requests_per_minute": 419.1334318498703
+    }
+  ],
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], driver_version, power.draw [W], temperature.gpu\nNVIDIA GeForce RTX 5060, 8151 MiB, 4352 MiB, 47 %, 580.178.04, 100.30 W, 56\n",
+  "label": "real-packed-b",
+  "quality": "small fixture suite only; no general accuracy claim"
+}

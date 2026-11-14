@@ -1,0 +1,135 @@
+{
+  "scope": "Eight predeclared short-answer checks; case-insensitive, whitespace-trimmed equality. Captions reviewed separately.",
+  "reference_run": "real-reference-c",
+  "candidate_run": "real-v2-e",
+  "cases": [
+    {
+      "case": "people-count",
+      "expected": "2",
+      "reference": [
+        "2",
+        "2",
+        "2"
+      ],
+      "candidate": [
+        "2",
+        "2",
+        "2"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "people-setting",
+      "expected": "INDOORS",
+      "reference": [
+        "INDOORS",
+        "INDOORS",
+        "INDOORS"
+      ],
+      "candidate": [
+        "INDOORS",
+        "INDOORS",
+        "INDOORS"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "fruit-color",
+      "expected": "orange",
+      "reference": [
+        "orange",
+        "orange",
+        "orange"
+      ],
+      "candidate": [
+        "orange",
+        "orange",
+        "orange"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "building-setting",
+      "expected": "OUTSIDE",
+      "reference": [
+        "OUTSIDE",
+        "OUTSIDE",
+        "OUTSIDE"
+      ],
+      "candidate": [
+        "OUTSIDE",
+        "OUTSIDE",
+        "OUTSIDE"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "sudoku-heading",
+      "expected": "SUDOKU",
+      "reference": [
+        "Sudoku",
+        "Sudoku",
+        "Sudoku"
+      ],
+      "candidate": [
+        "Sudoku",
+        "Sudoku",
+        "Sudoku"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "sudoku-first-number",
+      "expected": "6",
+      "reference": [
+        "6",
+        "6",
+        "6"
+      ],
+      "candidate": [
+        "6",
+        "6",
+        "6"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "pedestrians-start",
+      "expected": "YES",
+      "reference": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "candidate": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    },
+    {
+      "case": "tree-video",
+      "expected": "YES",
+      "reference": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "candidate": [
+        "YES",
+        "YES",
+        "YES"
+      ],
+      "reference_correct": true,
+      "candidate_correct": true
+    }
+  ]
+}
