@@ -48,3 +48,13 @@ git -C vendor/llama.cpp apply ../../experiments/qwen-packed-prefill.patch
 ```
 
 Build and retain a separate candidate server/library directory. For an isolated server experiment, retain the original reference dependencies and replace only the rebuilt server executable and `libllama-server-impl.so`. Use `--allow-backend-change` for comparisons. Restore sources with the same command plus `-R`, then restore the saved reference binaries/libraries. The patch is experimental and is not applied to the default submodule. See [measurements and limits](../results/2026-11-14-packed/README.md).
+
+## Uncached Qwen prefill without checkpoint splits
+
+`qwen-packed-no-checkpoints.patch` is a complete alternative to `qwen-packed-prefill.patch`, not a patch to stack on top of it. It retains the same narrow eligibility checks and additionally skips checkpoint creation and the prompt-tail splits intended to support checkpoints for these uncached, single-slot, non-speculative Qwen visual completion requests. Cached requests, shared prefixes, adapters and other model paths retain reference behavior.
+
+The hypothesis is that evaluating the final few prompt tokens separately adds avoidable small matrix operations and synchronization when those checkpoints cannot be reused. This changes evaluation grouping, so answer and numerical parity must still be checked. It does not change model weights, image resolution, video sampling or generation limits. Build and compare as for the earlier patch, retaining separate executable/library directories.
+
+[Real-media validation and follow-up measurements](../results/2026-11-14-real-media/README.md) record the stronger short-answer results and the remaining caption divergence. The candidate stays experimental; it is not applied to the default submodule.
+
+`qwen-packed-no-checkpoints-initial.patch` is retained only to reproduce the rejected first attempt. It incorrectly used the tokenizer's media-capability flag to identify visual requests and therefore changed text-only evaluation grouping. The corrected patch checks the actual first media chunk, restoring the reference text path. Do not use the initial patch as the candidate.

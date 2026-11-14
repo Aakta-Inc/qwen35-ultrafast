@@ -1,0 +1,55 @@
+diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
+index 0d61366..bb58138 100644
+--- a/tools/server/server-context.cpp
++++ b/tools/server/server-context.cpp
+@@ -4414,7 +4414,17 @@ private:
+                         alora_disabled_id = enabled_loras[0];
+                     }
+ 
+-                    bool do_checkpoint = params_base.n_ctx_checkpoints > 0;
++                    char architecture[32] = {};
++                    const bool pack_qwen_media = input_tokens.has_mtmd && slots.size() == 1 && !spec &&
++                        slot.lora.empty() && !slot.task->params.cache_prompt && slot.task->n_tokens_shared == 0 &&
++                        slot.task->type == SERVER_TASK_TYPE_COMPLETION && slot.can_split() &&
++                        llama_get_causal_attn(ctx_tgt) &&
++                        llama_model_meta_val_str(model_tgt, "general.architecture", architecture, sizeof(architecture)) == 6 &&
++                        std::string(architecture) == "qwen35";
++
++                    // Uncached, non-speculative requests cannot reuse these checkpoints.
++                    // Avoid both their snapshots and the extra prompt-tail decode splits.
++                    bool do_checkpoint = params_base.n_ctx_checkpoints > 0 && !pack_qwen_media;
+ 
+                     // make checkpoints only for completion tasks
+                     do_checkpoint = do_checkpoint && slot.task->type == SERVER_TASK_TYPE_COMPLETION;
+@@ -4491,6 +4501,31 @@ private:
+                         // get next token to process
+                         llama_token cur_tok = input_tokens[slot.prompt.n_tokens()];
+                         if (cur_tok == LLAMA_TOKEN_NULL) {
++                            if (pack_qwen_media) {
++                                const auto idx = slot.prompt.n_tokens();
++                                const auto & chunk = input_tokens.find_chunk(idx);
++                                const auto count = mtmd_input_chunk_get_n_tokens(chunk.get());
++                                if (mtmd_input_chunk_get_type(chunk.get()) != MTMD_INPUT_CHUNK_TYPE_IMAGE ||
++                                    mtmd_decode_use_non_causal(slot.mctx, chunk.get()) ||
++                                    count > (size_t) (std::min(n_batch, batch.n_tokens_alloc) - batch.size())) {
++                                    break;
++                                }
++                                float * embd = slot.mbatch ? mtmd_batch_get_output_embd(slot.mbatch.get(), chunk.get()) : nullptr;
++                                if (!embd) {
++                                    int32_t res = 0;
++                                    queue_tasks.yield_to_queue([&]() { res = encode_mtmd_chunk(slot, slot.mbatch, idx); });
++                                    embd = res == 0 ? mtmd_batch_get_output_embd(slot.mbatch.get(), chunk.get()) : nullptr;
++                                }
++                                if (!embd || !add_mtmd_chunk(slot, chunk.get(), embd, batch)) {
++                                    batch.truncate(0); // This path is restricted to a single slot.
++                                    send_error(slot, "failed to pack Qwen media chunk", ERROR_TYPE_SERVER);
++                                    slot.release();
++                                    return;
++                                }
++                                slot.prompt.tokens.push_back_placeholder(chunk.get());
++                                has_mtmd = true;
++                                continue;
++                            }
+                             break; // end of text chunk
+                         }
+ 
