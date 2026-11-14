@@ -28,7 +28,7 @@ static std::vector<char> weights(std::ifstream &file, const gguf_context *meta,
     return bytes;
 }
 
-static int compare(const char *left, const char *right) {
+static int compare(const char *left, const char *right, bool first_column = false) {
     std::ifstream a(left, std::ios::binary), b(right, std::ios::binary);
     require(bool(a) && bool(b), "cannot open comparison dumps");
     std::string ah, bh;
@@ -37,12 +37,12 @@ static int compare(const char *left, const char *right) {
     size_t count = 0, different = 0, cases = 0;
     double max_abs = 0, max_scaled = 0;
     while (std::getline(a, ah) && std::getline(b, bh)) {
-        require(ah == bh, "projection contracts differ");
         if (ah.rfind("COMPLETE ", 0) == 0) {
+            require(ah == bh, "completion contracts differ");
             require(cases == std::stoull(ah.substr(9)) && cases > 0, "invalid completed case count");
             require(a.peek() == EOF && b.peek() == EOF, "trailing dump data");
             const bool pass = max_scaled <= 2e-5;
-            std::cout << "cases=" << cases << " values=" << count << " bit_differences=" << different
+            std::cout << "first_column_only=" << first_column << " cases=" << cases << " values=" << count << " bit_differences=" << different
                       << " max_abs=" << max_abs << " max_abs_over_one_plus_reference=" << max_scaled
                       << " tolerance=2e-5 pass=" << pass << '\n';
             return pass ? 0 : 2;
@@ -56,18 +56,38 @@ static int compare(const char *left, const char *right) {
         require(rows > 0 && rows <= 1000000, "invalid dump row count");
         require(columns > 0 && columns <= 512, "invalid dump column count");
         const size_t values = rows * columns;
-        std::vector<float> av(values), bv(values);
+        size_t b_values = values;
+        if (first_column) {
+            const auto bfirst = bh.find(','), bsecond = bh.find(',', bfirst + 1), bthird = bh.find(',', bsecond + 1);
+            const auto bfourth = bh.find(',', bthird + 1), bfifth = bh.find(',', bfourth + 1);
+            require(bthird != std::string::npos && bfourth != std::string::npos && bfifth != std::string::npos, "invalid comparison header");
+            require(ah.substr(0, fourth) == bh.substr(0, bfourth) && ah.substr(fifth) == bh.substr(bfifth), "projection contracts differ beyond columns");
+            const size_t b_columns = std::stoull(bh.substr(bfourth + 1, bfifth - bfourth - 1));
+            require(b_columns > 0 && b_columns <= 512, "invalid comparison column count");
+            b_values = rows * b_columns;
+        } else {
+            require(ah == bh, "projection contracts differ");
+        }
+        std::vector<float> av(values), bv(b_values);
         a.read(reinterpret_cast<char *>(av.data()), values * sizeof(float));
-        b.read(reinterpret_cast<char *>(bv.data()), values * sizeof(float));
+        b.read(reinterpret_cast<char *>(bv.data()), b_values * sizeof(float));
         require(bool(a) && bool(b), "truncated output dump");
-        for (size_t i = 0; i < values; ++i) {
-            require(std::isfinite(av[i]) && std::isfinite(bv[i]), "non-finite comparison value");
-            different += std::memcmp(&av[i], &bv[i], sizeof(float)) != 0;
+        for (float value : av) require(std::isfinite(value), "non-finite reference output");
+        for (float value : bv) require(std::isfinite(value), "non-finite candidate output");
+        const size_t compared_values = first_column ? rows : values;
+        size_t case_different = 0;
+        double case_max_abs = 0;
+        for (size_t i = 0; i < compared_values; ++i) {
+            const bool unequal = std::memcmp(&av[i], &bv[i], sizeof(float)) != 0;
+            different += unequal;
+            case_different += unequal;
             const double error = std::abs(double(av[i]) - bv[i]);
+            case_max_abs = std::max(case_max_abs, error);
             max_abs = std::max(max_abs, error);
             max_scaled = std::max(max_scaled, error / (1.0 + std::abs(double(av[i]))));
         }
-        count += values;
+        count += compared_values;
+        if (first_column) std::cout << "projection=" << ah << " first_column_bit_differences=" << case_different << " max_abs=" << case_max_abs << '\n';
         ++cases;
     }
     throw std::runtime_error("incomplete output dump");
@@ -75,7 +95,8 @@ static int compare(const char *left, const char *right) {
 
 int main(int argc, char **argv) try {
     if (argc == 4 && std::string(argv[1]) == "--compare") return compare(argv[2], argv[3]);
-    require(argc >= 3, "usage: projection-probe MODEL.gguf NEW_OUTPUT.bin [--check] [--columns N] | --compare REFERENCE.bin CANDIDATE.bin");
+    if (argc == 4 && std::string(argv[1]) == "--compare-first-column") return compare(argv[2], argv[3], true);
+    require(argc >= 3, "usage: projection-probe MODEL.gguf NEW_OUTPUT.bin [--check] [--columns N] | --compare REFERENCE.bin CANDIDATE.bin | --compare-first-column LEFT.bin RIGHT.bin");
     bool check_only = false;
     int columns = 1;
     for (int i = 3; i < argc; ++i) {

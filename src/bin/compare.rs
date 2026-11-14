@@ -120,6 +120,20 @@ fn compare(
 ) -> Result<Value> {
     let a_meta = read(a_dir, "metadata.json")?;
     let b_meta = read(b_dir, "metadata.json")?;
+    let token_logprobs = |meta: &Value| -> Result<bool> {
+        match meta.get("token_logprobs") {
+            None => Ok(false),
+            Some(value) => value.as_bool().context("invalid token_logprobs setting"),
+        }
+    };
+    ensure!(
+        token_logprobs(&a_meta)? == token_logprobs(&b_meta)?,
+        "token probability settings differ"
+    );
+    ensure!(
+        quality_only || !token_logprobs(&a_meta)?,
+        "token-logprob runs are diagnostic, not performance evidence"
+    );
     same_contract(
         &a_meta,
         &b_meta,
@@ -154,6 +168,7 @@ fn compare(
         let mut generated_work_equal = true;
         let mut a_total = 0.;
         let mut b_total = 0.;
+        let mut token_differences = Vec::new();
         for (x, y) in left.iter().zip(right) {
             ensure!(
                 x["request_sha256"].is_string() && x["request_sha256"] == y["request_sha256"],
@@ -176,6 +191,34 @@ fn compare(
             }
             outputs_equal &= x["response"]["choices"][0]["message"]["content"]
                 == y["response"]["choices"][0]["message"]["content"];
+            if token_logprobs(&a_meta)? {
+                let records = |sample: &Value| -> Result<Vec<Value>> {
+                    let tokens = sample["response"]["choices"][0]["logprobs"]["content"]
+                        .as_array()
+                        .context("missing diagnostic token probabilities")?;
+                    ensure!(
+                        !tokens.is_empty()
+                            && tokens.iter().all(|t| t["id"].is_u64()
+                                && t["token"].is_string()
+                                && t["logprob"].as_f64().is_some_and(f64::is_finite)
+                                && t["top_logprobs"].as_array().is_some_and(|v| !v.is_empty())),
+                        "invalid diagnostic token probabilities"
+                    );
+                    Ok(tokens.clone())
+                };
+                let xt = records(x)?;
+                let yt = records(y)?;
+                let common = xt
+                    .iter()
+                    .zip(&yt)
+                    .take_while(|(a, b)| a["id"] == b["id"])
+                    .count();
+                token_differences.push(json!({
+                    "common_prefix_tokens":common,
+                    "first_difference_index":if common == xt.len() && common == yt.len() {None} else {Some(common)},
+                    "baseline":xt.get(common),"candidate":yt.get(common)
+                }));
+            }
             let at = x["wall_ms"].as_f64().context("missing wall time")?;
             let bt = y["wall_ms"].as_f64().context("missing wall time")?;
             ensure!(
@@ -187,6 +230,9 @@ fn compare(
         }
         let mut result = json!({"case":count,"sample_outputs_equal":outputs_equal,"generated_work_equal":generated_work_equal});
         if quality_only {
+            if token_logprobs(&a_meta)? {
+                result["token_differences"] = json!(token_differences);
+            }
             result["baseline_outputs"] = json!(
                 left.iter()
                     .map(|v| &v["response"]["choices"][0]["message"]["content"])
@@ -281,6 +327,105 @@ mod tests {
                 false,
                 true,
                 &["missing".into()]
+            )
+            .is_err()
+        );
+        let mut diagnostic_meta = meta.clone();
+        diagnostic_meta["token_logprobs"] = json!(true);
+        fs::write(root.join("left/metadata.json"), diagnostic_meta.to_string()).unwrap();
+        assert!(
+            compare(
+                &root.join("left"),
+                &root.join("left"),
+                false,
+                false,
+                false,
+                &[]
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("diagnostic")
+        );
+        assert!(
+            compare(
+                &root.join("left"),
+                &root.join("left"),
+                false,
+                false,
+                true,
+                &[]
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("missing diagnostic")
+        );
+        let mut diagnostic_sample: Value = serde_json::from_str(
+            fs::read_to_string(root.join("left/samples.jsonl"))
+                .unwrap()
+                .trim(),
+        )
+        .unwrap();
+        diagnostic_sample["response"]["choices"][0]["logprobs"] = json!({"content":[
+            {"id":32,"token":"A","logprob":-0.5,"top_logprobs":[{"id":32,"token":"A","logprob":-0.5}]}
+        ]});
+        fs::write(
+            root.join("left/samples.jsonl"),
+            format!("{diagnostic_sample}\n"),
+        )
+        .unwrap();
+        let diagnostic = compare(
+            &root.join("left"),
+            &root.join("left"),
+            false,
+            false,
+            true,
+            &[],
+        )
+        .unwrap();
+        assert_eq!(
+            diagnostic["cases"][0]["token_differences"][0]["common_prefix_tokens"],
+            1
+        );
+        assert!(diagnostic["cases"][0]["token_differences"][0]["first_difference_index"].is_null());
+        fs::write(
+            root.join("right/metadata.json"),
+            diagnostic_meta.to_string(),
+        )
+        .unwrap();
+        diagnostic_sample["response"]["choices"][0]["logprobs"]["content"][0]["id"] = json!(33);
+        diagnostic_sample["response"]["choices"][0]["logprobs"]["content"][0]["token"] = json!("B");
+        fs::write(
+            root.join("right/samples.jsonl"),
+            format!("{diagnostic_sample}\n"),
+        )
+        .unwrap();
+        let changed = compare(
+            &root.join("left"),
+            &root.join("right"),
+            false,
+            false,
+            true,
+            &[],
+        )
+        .unwrap();
+        assert_eq!(
+            changed["cases"][0]["token_differences"][0]["first_difference_index"],
+            0
+        );
+        assert_eq!(
+            changed["cases"][0]["token_differences"][0]["candidate"]["token"],
+            "B"
+        );
+        diagnostic_meta["token_logprobs"] = json!("invalid");
+        fs::write(root.join("left/metadata.json"), diagnostic_meta.to_string()).unwrap();
+        assert!(
+            compare(
+                &root.join("left"),
+                &root.join("left"),
+                false,
+                false,
+                true,
+                &[]
             )
             .is_err()
         );

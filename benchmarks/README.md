@@ -25,6 +25,8 @@ Each shape uses three deterministic activation vectors: zero plus two nonzero si
 
 `--columns 196` probes image-prompt matrix batches; values from 1 to 512 are supported. The output/embedding head is excluded for multi-column probes because the measured model evaluates it only at selected logits positions. Keep the column count identical across a comparison. `--check` performs one execution per input and writes zero timing fields; use it for correctness and sanitizer runs, never performance.
 
+For a batch-shape diagnostic, `--compare-first-column LEFT.bin RIGHT.bin` compares only the first output column while allowing different column counts. All other tensor/shape/seed contracts must match; both dumps must be complete and finite. The probe generates the same first activation column at every batch width. Use widths above one to retain the same case set. This isolates matrix batch sensitivity, not whole-model caption quality, and reports no speedup. The usual `--compare` still requires identical shapes and checks every output.
+
 ```sh
 compute-sanitizer --tool memcheck --error-exitcode 86 \
   build/projection-probe MODEL.gguf runs/projection-checked.bin --check

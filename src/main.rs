@@ -61,6 +61,9 @@ struct Args {
     /// Use a hash-pinned local media manifest instead of the synthetic cases.
     #[arg(long, conflicts_with_all = ["video", "quality_probes", "images"])]
     corpus: Option<PathBuf>,
+    /// Diagnostic token probabilities; these runs cannot be used as performance evidence.
+    #[arg(long)]
+    token_logprobs: bool,
 }
 
 struct Server(Child);
@@ -372,6 +375,7 @@ fn run(args: Args) -> Result<()> {
         "media_tools":if args.video.is_some() || corpus.as_ref().is_some_and(|(m, _)| m["cases"].as_array().unwrap().iter().any(|c| c["mime"] == "video/mp4")) { media_tools()? } else {json!({})},
         "corpus":corpus.as_ref().map(|(m, _)| m),
         "profiling":args.profile_library.is_some(),
+        "token_logprobs":args.token_logprobs,
         "profiling_library_sha256":args.profile_library.as_deref().map(hash_file).transpose()?,
         "host_load_before":host_load(),
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
@@ -453,7 +457,11 @@ fn run(args: Args) -> Result<()> {
             cases.extend(quality_requests()?);
         }
     }
-    for (case, request) in cases {
+    for (case, mut request) in cases {
+        if args.token_logprobs {
+            request["logprobs"] = json!(true);
+            request["top_logprobs"] = json!(5);
+        }
         let body = serde_json::to_vec(&request)?;
         let mut times = Vec::new();
         let mut outputs = Vec::new();
