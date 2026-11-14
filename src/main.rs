@@ -205,6 +205,15 @@ fn gpu_snapshot() -> Result<String> {
     ensure!(result.status.success(), "nvidia-smi failed");
     Ok(String::from_utf8(result.stdout)?)
 }
+// Linux load averages include runnable and uninterruptible tasks, not CPU utilization.
+fn host_load() -> Value {
+    match fs::read_to_string("/proc/loadavg") {
+        Ok(text) => {
+            json!({"linux_loadavg":text.trim(),"logical_cpus":thread::available_parallelism().ok().map(|n| n.get())})
+        }
+        Err(error) => json!({"unavailable":error.to_string()}),
+    }
+}
 fn run(args: Args) -> Result<()> {
     ensure!(args.video_fps > 0, "video FPS must be positive");
     ensure!(
@@ -269,6 +278,7 @@ fn run(args: Args) -> Result<()> {
         "media_tools":if args.video.is_some() { media_tools()? } else {json!({})},
         "profiling":args.profile_library.is_some(),
         "profiling_library_sha256":args.profile_library.as_deref().map(hash_file).transpose()?,
+        "host_load_before":host_load(),
         "server_version_stdout":String::from_utf8_lossy(&version.stdout), "server_version_stderr":String::from_utf8_lossy(&version.stderr),
         "model_sha256":hash_file(&args.model)?,"mmproj_sha256":hash_file(&args.mmproj)?,"gpu_before":before,
         "settings":{"ubatch":args.ubatch,"batch":args.batch,"context":args.context,"threads":args.threads,"graphs":!args.disable_graphs,"flash_attention":true,"cache_prompt":false,"parallel":1,"video_fps":args.video_fps},
@@ -350,7 +360,7 @@ fn run(args: Args) -> Result<()> {
                 .into_json()?;
             let elapsed = start.elapsed().as_secs_f64() * 1000.;
             validate_response(&response)?;
-            let sample = json!({"case":case,"warmup":repetition==0,"repetition":repetition,"request_sha256":hash_bytes(&body),"wall_ms":elapsed,"response":response,"gpu_after":gpu_snapshot()?});
+            let sample = json!({"case":case,"warmup":repetition==0,"repetition":repetition,"request_sha256":hash_bytes(&body),"wall_ms":elapsed,"response":response,"gpu_after":gpu_snapshot()?,"host_load_after":host_load()});
             serde_json::to_writer(&mut raw, &sample)?;
             raw.write_all(b"\n")?;
             raw.flush()?;
