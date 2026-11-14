@@ -1,0 +1,16 @@
+diff --git a/ggml/src/ggml-cuda/mmq-config-blackwell.cuh b/ggml/src/ggml-cuda/mmq-config-blackwell.cuh
+index 9fbe32b..20e330e 100644
+--- a/ggml/src/ggml-cuda/mmq-config-blackwell.cuh
++++ b/ggml/src/ggml-cuda/mmq-config-blackwell.cuh
+@@ -35,3 +35,10 @@ static constexpr __host__ __device__ ggml_cuda_mmq_config ggml_cuda_mmq_get_conf
+ 
+-    return ggml_cuda_mmq_get_config_ampere(type, J, fallback);
++    auto config = ggml_cuda_mmq_get_config_ampere(type, J, fallback);
++    // Qwen image-prefill tile: fit more independent blocks in SM120 shared memory.
++    if (!fallback && J == 112 &&
++        (type == GGML_TYPE_Q4_K || type == GGML_TYPE_Q5_K || type == GGML_TYPE_Q6_K)) {
++        config.I = 64;
++        config.nthreads = 128;
++    }
++    return config;
+ }

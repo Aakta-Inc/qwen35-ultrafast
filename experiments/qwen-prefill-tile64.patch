@@ -1,0 +1,18 @@
+diff --git a/ggml/src/ggml-cuda/mmq.cu b/ggml/src/ggml-cuda/mmq.cu
+index 2e61997..b94dcb1 100644
+--- a/ggml/src/ggml-cuda/mmq.cu
++++ b/ggml/src/ggml-cuda/mmq.cu
+@@ -259,2 +259,13 @@ void ggml_cuda_mul_mat_q(
+         J_best = ggml_cuda_mmq_get_J_best(src0->type, ncols_opt, fallback, cc, smpbo, prec_src1, &nthreads_best);
++        // Smaller dense Qwen tiles reduce shared-memory pressure on SM120.
++        if (!ids && cc == GGML_CUDA_CC_BLACKWELL && ne11 >= 128 && ne11 <= 512 &&
++            (ne00 == 2560 || ne00 == 4096 || ne00 == 9216) &&
++            (src0->type == GGML_TYPE_Q4_K || src0->type == GGML_TYPE_Q5_K || src0->type == GGML_TYPE_Q6_K)) {
++            const auto config = ggml_cuda_mmq_get_config(src0->type, 64, fallback, cc, prec_src1);
++            const auto previous = ggml_cuda_mmq_get_config(src0->type, J_best, fallback, cc, prec_src1);
++            if (config.type != GGML_TYPE_COUNT && config.I == previous.I && mmq_get_nbytes_shared(config, cc) <= smpbo) {
++                J_best = 64;
++                nthreads_best = config.nthreads;
++            }
++        }
+     }
